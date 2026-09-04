@@ -1422,8 +1422,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // ---------------- Map init ----------------
   var map = L.map('map', { zoomControl:false, scrollWheelZoom:true }).fitBounds(FUKUI_BOUNDS);
   L.control.zoom({position:'topright'}).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+  // CARTO's basemap tiles (basemaps.cartocdn.com) now require a signed-up API key
+  // for every request -- unkeyed requests get the "API KEY REQUIRED" watermark tile
+  // seen in production. Swapped to Esri's free, no-signup "Light Gray Canvas" basemap,
+  // which is the closest key-free equivalent to CARTO Positron's light, low-contrast
+  // style (base + a separate label/reference layer on top, same visual result).
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom: 16
+  }).addTo(map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 16
   }).addTo(map);
 
   // ---------------- Regional density halos ----------------
