@@ -8,7 +8,8 @@ Revitalization · Japan Science and Technology Agency Sakura Science Program.
 
 ## How to Run
 1. Clone the repo
-2. Run: python3 -m http.server 8080     # then open http://localhost:8080
+2. Run:
+       python3 -m http.server 8080     # then open http://localhost:8080
 
 
 
