@@ -1,0 +1,612 @@
+{
+ "meta": {
+  "generatedAt": "2026-09-09T10:23:31+00:00",
+  "source": "code4fukui/fukui-kanko-survey (FTAS, Fukui Prefecture Tourism Federation)",
+  "sourceUrl": "https://github.com/code4fukui/fukui-kanko-survey",
+  "license": "not declared by the source repo; attribution given, terms unconfirmed",
+  "attribution": "福井県観光連盟 (Fukui Tourism Federation) / FTAS, via Code for Fukui",
+  "monthsCovered": [
+   "2022-04",
+   "2022-05",
+   "2022-06",
+   "2022-07",
+   "2022-08",
+   "2022-09",
+   "2022-10",
+   "2022-11",
+   "2022-12",
+   "2023-01",
+   "2023-02",
+   "2023-03",
+   "2023-04",
+   "2023-05",
+   "2023-06",
+   "2023-07",
+   "2023-08",
+   "2023-09",
+   "2023-10",
+   "2023-11",
+   "2023-12",
+   "2024-01",
+   "2024-02",
+   "2024-03",
+   "2024-04",
+   "2024-05",
+   "2024-06",
+   "2024-07",
+   "2024-08",
+   "2024-09",
+   "2024-10",
+   "2024-11",
+   "2024-12",
+   "2025-01",
+   "2025-02",
+   "2025-03",
+   "2025-04",
+   "2025-05",
+   "2025-06",
+   "2025-07",
+   "2025-08",
+   "2025-09",
+   "2025-10",
+   "2025-11",
+   "2025-12",
+   "2026-01",
+   "2026-02",
+   "2026-03",
+   "2026-04",
+   "2026-05",
+   "2026-06",
+   "2026-07",
+   "2026-08",
+   "2026-09"
+  ],
+  "respondentsTotal": 102603,
+  "respondentsAtNodes": 29862,
+  "indexBase": {
+   "maxNodeSeasonResponses": 1786,
+   "note": "actual/predicted are a 0-100 survey-response volume index, not visitor headcount"
+  },
+  "model": {
+   "spec": "OLS: actual_idx ~ prev + digital + overnight + mean_NPS + revisit_intent + node FE",
+   "trainThrough": "2025-08",
+   "nTrain": 320,
+   "nTest": 114,
+   "r2InSample": 0.594,
+   "r2Holdout": 0.562,
+   "maeIndexPoints": 1.5,
+   "maeResponses": 26.7
+  },
+  "econShare": {
+   "tojinbo": 0.0404,
+   "station": 0.14817,
+   "katsuyama": 0.12017,
+   "rainbow": 0.02934,
+   "eiheiji": 0.12059,
+   "awara": 0.42592,
+   "mikuni": 0.04173,
+   "maruoka": 0.02401,
+   "ono": 0.04967
+  },
+  "coverage": {
+   "tojinbo/spring": 530,
+   "station/spring": 1221,
+   "katsuyama/spring": 1516,
+   "rainbow/spring": 551,
+   "eiheiji/spring": 1649,
+   "awara/spring": 1684,
+   "mikuni/spring": 345,
+   "maruoka/spring": 528,
+   "ono/spring": 798,
+   "tojinbo/summer": 578,
+   "station/summer": 1077,
+   "katsuyama/summer": 1393,
+   "rainbow/summer": 623,
+   "eiheiji/summer": 1691,
+   "awara/summer": 1725,
+   "mikuni/summer": 318,
+   "maruoka/summer": 475,
+   "ono/summer": 765,
+   "tojinbo/autumn": 545,
+   "station/autumn": 1264,
+   "katsuyama/autumn": 773,
+   "rainbow/autumn": 485,
+   "eiheiji/autumn": 1305,
+   "awara/autumn": 1786,
+   "mikuni/autumn": 252,
+   "maruoka/autumn": 598,
+   "ono/autumn": 935,
+   "tojinbo/winter": 324,
+   "station/winter": 839,
+   "katsuyama/winter": 645,
+   "rainbow/winter": 136,
+   "eiheiji/winter": 681,
+   "awara/winter": 1119,
+   "mikuni/winter": 245,
+   "maruoka/winter": 313,
+   "ono/winter": 150
+  }
+ },
+ "nodes": {
+  "station": {
+   "areaId": 300004,
+   "areaName": "福井駅前 エリア",
+   "lat": 36.061515,
+   "lng": 136.2224369,
+   "city": "福井市"
+  },
+  "tojinbo": {
+   "areaId": 300006,
+   "areaName": "東尋坊 エリア",
+   "lat": 36.2376685,
+   "lng": 136.1265737,
+   "city": "坂井市"
+  },
+  "maruoka": {
+   "areaId": 300008,
+   "areaName": "丸岡城 エリア",
+   "lat": 36.152345,
+   "lng": 136.272103,
+   "city": "坂井市"
+  },
+  "awara": {
+   "areaId": 300011,
+   "areaName": "あわら湯のまち エリア",
+   "lat": 36.2256037,
+   "lng": 136.1941521,
+   "city": "あわら市"
+  },
+  "ono": {
+   "areaId": 300015,
+   "areaName": "越前大野城・城下町 エリア",
+   "lat": 35.986586,
+   "lng": 136.483062,
+   "city": "大野市"
+  },
+  "katsuyama": {
+   "areaId": 300019,
+   "areaName": "かつやま恐竜の森 エリア",
+   "lat": 36.083927,
+   "lng": 136.507083,
+   "city": "勝山市"
+  },
+  "eiheiji": {
+   "areaId": 300025,
+   "areaName": "大本山 永平寺 エリア",
+   "lat": 36.0567754,
+   "lng": 136.3568759,
+   "city": "永平寺町"
+  },
+  "rainbow": {
+   "areaId": 300059,
+   "areaName": "レインボーライン エリア",
+   "lat": 35.601189,
+   "lng": 135.8688963,
+   "city": "美浜町"
+  },
+  "mikuni": {
+   "areaId": 300076,
+   "areaName": "三国湊 エリア",
+   "lat": 36.21432,
+   "lng": 136.149227,
+   "city": "坂井市"
+  }
+ },
+ "seasons": {
+  "spring": {
+   "hotelOcc": 56.5,
+   "overnightShare": 72.8,
+   "ishikawaShare": 4.87,
+   "nodes": {
+    "tojinbo": {
+     "actual": 29.7,
+     "predicted": 24.5,
+     "rsi": 56.2,
+     "sentiment": 78.7,
+     "friction": 22.1,
+     "spendYen": 5382,
+     "n": 530
+    },
+    "station": {
+     "actual": 68.4,
+     "predicted": 65.4,
+     "rsi": 55.9,
+     "sentiment": 79.2,
+     "friction": 19.2,
+     "spendYen": 7830,
+     "n": 1221
+    },
+    "katsuyama": {
+     "actual": 84.9,
+     "predicted": 72.6,
+     "rsi": 59.0,
+     "sentiment": 84.3,
+     "friction": 16.5,
+     "spendYen": 6589,
+     "n": 1516
+    },
+    "rainbow": {
+     "actual": 30.9,
+     "predicted": 22.9,
+     "rsi": 62.1,
+     "sentiment": 81.5,
+     "friction": 15.1,
+     "spendYen": 4031,
+     "n": 551
+    },
+    "eiheiji": {
+     "actual": 92.3,
+     "predicted": 64.4,
+     "rsi": 57.9,
+     "sentiment": 82.2,
+     "friction": 15.8,
+     "spendYen": 5190,
+     "n": 1649
+    },
+    "awara": {
+     "actual": 94.3,
+     "predicted": 91.1,
+     "rsi": 63.5,
+     "sentiment": 79.1,
+     "friction": 13.1,
+     "spendYen": 15162,
+     "n": 1684
+    },
+    "mikuni": {
+     "actual": 19.3,
+     "predicted": 19.2,
+     "rsi": 49.0,
+     "sentiment": 78.2,
+     "friction": 15.4,
+     "spendYen": 8459,
+     "n": 345
+    },
+    "maruoka": {
+     "actual": 29.6,
+     "predicted": 30.9,
+     "rsi": 50.4,
+     "sentiment": 76.4,
+     "friction": 14.4,
+     "spendYen": 2970,
+     "n": 528
+    },
+    "ono": {
+     "actual": 44.7,
+     "predicted": 35.5,
+     "rsi": 54.9,
+     "sentiment": 76.0,
+     "friction": 16.8,
+     "spendYen": 4596,
+     "n": 798
+    }
+   }
+  },
+  "summer": {
+   "hotelOcc": 57.6,
+   "overnightShare": 74.4,
+   "ishikawaShare": 3.79,
+   "nodes": {
+    "tojinbo": {
+     "actual": 32.4,
+     "predicted": 39.4,
+     "rsi": 60.2,
+     "sentiment": 76.5,
+     "friction": 22.5,
+     "spendYen": 4527,
+     "n": 578
+    },
+    "station": {
+     "actual": 60.3,
+     "predicted": 74.7,
+     "rsi": 53.5,
+     "sentiment": 77.4,
+     "friction": 19.0,
+     "spendYen": 7656,
+     "n": 1077
+    },
+    "katsuyama": {
+     "actual": 78.0,
+     "predicted": 80.0,
+     "rsi": 62.8,
+     "sentiment": 84.8,
+     "friction": 18.4,
+     "spendYen": 6800,
+     "n": 1393
+    },
+    "rainbow": {
+     "actual": 34.9,
+     "predicted": 42.6,
+     "rsi": 57.9,
+     "sentiment": 81.6,
+     "friction": 13.6,
+     "spendYen": 3880,
+     "n": 623
+    },
+    "eiheiji": {
+     "actual": 94.7,
+     "predicted": 100.0,
+     "rsi": 56.1,
+     "sentiment": 81.6,
+     "friction": 13.1,
+     "spendYen": 5407,
+     "n": 1691
+    },
+    "awara": {
+     "actual": 96.6,
+     "predicted": 100.0,
+     "rsi": 65.1,
+     "sentiment": 79.7,
+     "friction": 11.0,
+     "spendYen": 16353,
+     "n": 1725
+    },
+    "mikuni": {
+     "actual": 17.8,
+     "predicted": 22.7,
+     "rsi": 51.6,
+     "sentiment": 75.8,
+     "friction": 13.2,
+     "spendYen": 6901,
+     "n": 318
+    },
+    "maruoka": {
+     "actual": 26.6,
+     "predicted": 34.2,
+     "rsi": 48.2,
+     "sentiment": 75.6,
+     "friction": 9.7,
+     "spendYen": 3113,
+     "n": 475
+    },
+    "ono": {
+     "actual": 42.8,
+     "predicted": 53.5,
+     "rsi": 51.6,
+     "sentiment": 75.4,
+     "friction": 17.5,
+     "spendYen": 4615,
+     "n": 765
+    }
+   }
+  },
+  "autumn": {
+   "hotelOcc": 63.9,
+   "overnightShare": 72.3,
+   "ishikawaShare": 4.08,
+   "nodes": {
+    "tojinbo": {
+     "actual": 30.5,
+     "predicted": 28.1,
+     "rsi": 59.3,
+     "sentiment": 76.6,
+     "friction": 25.5,
+     "spendYen": 4729,
+     "n": 545
+    },
+    "station": {
+     "actual": 70.8,
+     "predicted": 64.5,
+     "rsi": 55.2,
+     "sentiment": 76.8,
+     "friction": 22.1,
+     "spendYen": 8005,
+     "n": 1264
+    },
+    "katsuyama": {
+     "actual": 43.3,
+     "predicted": 54.8,
+     "rsi": 60.0,
+     "sentiment": 83.4,
+     "friction": 14.6,
+     "spendYen": 6377,
+     "n": 773
+    },
+    "rainbow": {
+     "actual": 27.2,
+     "predicted": 27.9,
+     "rsi": 54.6,
+     "sentiment": 81.6,
+     "friction": 12.2,
+     "spendYen": 3791,
+     "n": 485
+    },
+    "eiheiji": {
+     "actual": 73.1,
+     "predicted": 74.1,
+     "rsi": 55.9,
+     "sentiment": 82.4,
+     "friction": 17.0,
+     "spendYen": 5624,
+     "n": 1305
+    },
+    "awara": {
+     "actual": 100.0,
+     "predicted": 96.0,
+     "rsi": 67.4,
+     "sentiment": 79.2,
+     "friction": 14.7,
+     "spendYen": 17011,
+     "n": 1786
+    },
+    "mikuni": {
+     "actual": 14.1,
+     "predicted": 12.6,
+     "rsi": 54.4,
+     "sentiment": 78.5,
+     "friction": 17.9,
+     "spendYen": 8129,
+     "n": 252
+    },
+    "maruoka": {
+     "actual": 33.5,
+     "predicted": 27.2,
+     "rsi": 47.2,
+     "sentiment": 75.0,
+     "friction": 13.9,
+     "spendYen": 3172,
+     "n": 598
+    },
+    "ono": {
+     "actual": 52.4,
+     "predicted": 38.6,
+     "rsi": 52.7,
+     "sentiment": 76.3,
+     "friction": 17.6,
+     "spendYen": 4257,
+     "n": 935
+    }
+   }
+  },
+  "winter": {
+   "hotelOcc": 51.2,
+   "overnightShare": 76.7,
+   "ishikawaShare": 4.81,
+   "nodes": {
+    "tojinbo": {
+     "actual": 18.1,
+     "predicted": 25.1,
+     "rsi": 58.6,
+     "sentiment": 76.0,
+     "friction": 27.2,
+     "spendYen": 4861,
+     "n": 324
+    },
+    "station": {
+     "actual": 47.0,
+     "predicted": 57.3,
+     "rsi": 54.0,
+     "sentiment": 77.4,
+     "friction": 17.5,
+     "spendYen": 8779,
+     "n": 839
+    },
+    "katsuyama": {
+     "actual": 36.1,
+     "predicted": 45.3,
+     "rsi": 59.1,
+     "sentiment": 85.5,
+     "friction": 19.1,
+     "spendYen": 6560,
+     "n": 645
+    },
+    "rainbow": {
+     "actual": 7.6,
+     "predicted": 17.3,
+     "rsi": 51.5,
+     "sentiment": 83.8,
+     "friction": 7.4,
+     "spendYen": 3768,
+     "n": 136
+    },
+    "eiheiji": {
+     "actual": 38.1,
+     "predicted": 56.8,
+     "rsi": 56.4,
+     "sentiment": 81.7,
+     "friction": 15.9,
+     "spendYen": 5405,
+     "n": 681
+    },
+    "awara": {
+     "actual": 62.7,
+     "predicted": 81.3,
+     "rsi": 66.3,
+     "sentiment": 79.2,
+     "friction": 15.7,
+     "spendYen": 15478,
+     "n": 1119
+    },
+    "mikuni": {
+     "actual": 13.7,
+     "predicted": 12.1,
+     "rsi": 54.3,
+     "sentiment": 77.6,
+     "friction": 15.9,
+     "spendYen": 11333,
+     "n": 245
+    },
+    "maruoka": {
+     "actual": 17.5,
+     "predicted": 22.6,
+     "rsi": 49.5,
+     "sentiment": 74.8,
+     "friction": 12.8,
+     "spendYen": 2474,
+     "n": 313
+    },
+    "ono": {
+     "actual": 8.4,
+     "predicted": 23.0,
+     "rsi": 50.0,
+     "sentiment": 76.1,
+     "friction": 15.3,
+     "spendYen": 4350,
+     "n": 150
+    }
+   }
+  }
+ },
+ "reservations": {
+  "scope": "Awara Onsen, 10 hotels",
+  "totalRooms": 576,
+  "dateRange": [
+   "2023-10-01",
+   "2026-09-09"
+  ],
+  "occupancyPct": {
+   "spring": 56.5,
+   "summer": 57.6,
+   "autumn": 63.9,
+   "winter": 51.2
+  },
+  "guestsPerNight": {
+   "spring": 956,
+   "summer": 1050,
+   "autumn": 1051,
+   "winter": 859
+  },
+  "revenuePerNightYen": {
+   "spring": 25195323,
+   "summer": 27189905,
+   "autumn": 28265544,
+   "winter": 26726630
+  },
+  "avgFeePerStayYen": 106886,
+  "bookingCurveRooms": {
+   "spring": {
+    "0": 107.5,
+    "7": 102.2,
+    "14": 95.0,
+    "30": 74.5,
+    "60": 40.4,
+    "90": 21.4
+   },
+   "summer": {
+    "0": 114.4,
+    "7": 106.1,
+    "14": 94.7,
+    "30": 71.2,
+    "60": 39.6,
+    "90": 23.1
+   },
+   "autumn": {
+    "0": 114.0,
+    "7": 110.1,
+    "14": 104.8,
+    "30": 89.2,
+    "60": 61.2,
+    "90": 41.9
+   },
+   "winter": {
+    "0": 93.0,
+    "7": 91.0,
+    "14": 86.3,
+    "30": 72.5,
+    "60": 47.3,
+    "90": 28.7
+   }
+  },
+  "forwardBookedNights": 90,
+  "forwardBookedThrough": "2026-12-08"
+ }
+}

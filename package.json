@@ -1,0 +1,14 @@
+{
+  "name": "fukui-dhde-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fukui / Hokuriku DHDE live population movement prototype, wired to code4fukui open data and JMA",
+  "scripts": {
+    "verify": "node verify.js",
+    "verify:live": "node verify_live.js",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "playwright": "^1.47.0"
+  }
+}

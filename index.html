@@ -906,7 +906,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
       <div class="card">
         <div class="card-title"><span class="en">Traffic congestion by node</span><span class="ja">ノード別交通混雑状況</span></div>
-        <div class="card-sub"><span class="en">Live tier derived from Edge-AI camera density vs. site capacity</span><span class="ja">Edge-AIカメラの密度と施設容量から算出したライブ混雑レベル</span></div>
+        <div class="card-sub"><span class="en">Measured: share of FTAS respondents at each node who reported feeling inconvenienced (不便さ)</span><span class="ja">実測：各ノードで「不便さを感じた」と回答したFTAS回答者の割合</span></div>
         <div id="congestion-rows"></div>
       </div>
 
@@ -923,7 +923,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <h2><span><span class="live-dot" style="background:#0ca3a3;"></span><span class="en">Merchant vitality alerts</span><span class="ja">店舗向け活性化アラート</span></span></h2>
       <div class="card">
         <div class="card-title"><span class="en">Supply-side surge alerts</span><span class="ja">供給側サージアラート</span></div>
-        <div class="card-sub"><span class="en">Fires when forecast intent outruns detected arrivals; the window to extend hours or staff up before the surge lands.</span><span class="ja">予測需要が実測来訪者数を上回った時に発火。急増が到来する前に営業時間延長やスタッフ増員を行う猶予時間。</span></div>
+        <div class="card-sub"><span class="en">Fires when the fitted forecast runs ahead of measured response volume; the window to extend hours or staff up before the surge lands.</span><span class="ja">予測需要が実測来訪者数を上回った時に発火。急増が到来する前に営業時間延長やスタッフ増員を行う猶予時間。</span></div>
         <div id="merchant-rows"></div>
       </div>
 
@@ -962,19 +962,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div class="econ-stats">
           <div class="econ-tile">
             <div class="econ-num"><span class="en">¥11.96B</span><span class="ja">約119.6億円</span></div>
-            <div class="econ-label"><span class="en">Annual opportunity gap<br/>(~$72.6M)</span><span class="ja">年間機会損失（約7,260万ドル）</span></div>
+            <div class="econ-label"><span class="en">Annual opportunity gap<br/>(~$72.6M)<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026, not measured here</span></span><span class="ja">年間機会損失（約7,260万ドル）<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026の値、実測ではありません</span></span></div>
           </div>
           <div class="econ-tile">
             <div class="econ-num">865,917</div>
-            <div class="econ-label"><span class="en">Suppressed visits / yr</span><span class="ja">年間の抑制された来訪数</span></div>
+            <div class="econ-label"><span class="en">Suppressed visits / yr<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026, not measured here</span></span><span class="ja">年間の抑制された来訪数<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026の値、実測ではありません</span></span></div>
           </div>
           <div class="econ-tile">
             <div class="econ-num">47th → top 35</div>
-            <div class="econ-label"><span class="en">National ranking potential</span><span class="ja">全国順位の改善ポテンシャル</span></div>
+            <div class="econ-label"><span class="en">National ranking potential<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026, not measured here</span></span><span class="ja">全国順位の改善ポテンシャル<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026の値、実測ではありません</span></span></div>
           </div>
         </div>
         <div class="econ-breakdown-wrap">
-          <div class="econ-breakdown-title"><span class="en">Illustrative per-node share of the opportunity gap <span class="econ-breakdown-note">(weighted by weather exposure &amp; visitor scale; not a paper-level per-site figure)</span></span><span class="ja">機会損失のノード別内訳（イメージ）<span class="econ-breakdown-note">（気象リスクと来訪規模による重み付け。論文レベルの拠点別数値ではありません）</span></span></div>
+          <div class="econ-breakdown-title"><span class="en">Per-node share of the opportunity gap <span class="econ-breakdown-note">(split by each node&rsquo;s measured share of reported visitor spend, FTAS エリア総消費額; the prefecture-wide total is the paper&rsquo;s)</span></span><span class="ja">機会損失のノード別内訳<span class="econ-breakdown-note">（FTAS「エリア総消費額」による実測消費シェアで按分。県全体の総額は論文の値）</span></span></div>
           <div class="econ-breakdown" id="econ-breakdown"></div>
         </div>
       </div>
@@ -983,34 +983,34 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <button class="panel-toggle panel-toggle-right" id="toggle-sidebar" title="Collapse / expand the sensor feed panel">&#8250;</button>
     <aside class="sidebar">
 
-      <h2 style="margin-top:0;"><span><span class="live-dot"></span><span class="en">Live sensor feed</span><span class="ja">ライブセンサーフィード</span></span></h2>
+      <h2 style="margin-top:0;"><span><span class="live-dot"></span><span class="en">Live data feed</span><span class="ja">ライブデータフィード</span></span></h2>
 
       <div class="sensor-grid">
         <div class="card">
           <div class="card-title"><span class="en">Digital intent</span><span class="ja">デジタル関心度</span></div>
-          <div class="card-sub"><span class="en">RSI proxy, 47 sites</span><span class="ja">RSI（ルート検索）代理指標、47地点</span></div>
+          <div class="card-sub"><span class="en">Share using online info sources &middot; FTAS, 29,862 responses</span><span class="ja">オンライン情報源の利用率 ・ FTAS 29,862件</span></div><div class="card-sub" id="live-survey-note" style="color:#0ca30c;"></div>
           <div class="big-num" id="rsi-big">-<span class="unit">/100</span></div>
           <canvas class="sparkline" id="rsi-spark" width="300" height="28"></canvas>
         </div>
 
         <div class="card">
           <div class="card-title"><span class="en">Behavioral / Kansei</span><span class="ja">行動・感性（Kansei）分析</span></div>
-          <div class="card-sub"><span class="en">71,623 responses, mined</span><span class="ja">71,623件の回答を分析</span></div>
+          <div class="card-sub"><span class="en">Mean NPS &middot; 29,862 FTAS responses, 2022--04 to 2026--09</span><span class="ja">平均NPS ・ FTAS 29,862件、2022年-04月〜2026年-09月</span></div>
           <div class="gauge-track"><div class="gauge-fill" id="sentiment-fill"></div></div>
           <div class="mini-row" style="border-top:none;padding-top:5px;"><span class="name" id="sentiment-label">-</span><span class="val" id="sentiment-val">-</span></div>
           <div class="chips" id="sentiment-chips"></div>
         </div>
 
         <div class="card" style="grid-column:1/-1;">
-          <div class="card-title"><span class="en">Ground-truth cameras</span><span class="ja">実測カメラ</span></div>
-          <div class="card-sub"><span class="en">YOLO, 5-min intervals</span><span class="ja">YOLO検出、5分間隔</span></div>
-          <div class="big-num" id="camera-big">-<span class="unit">/day, all nodes</span></div>
+          <div class="card-title"><span class="en">Survey responses by node</span><span class="ja">ノード別アンケート回答数</span></div>
+          <div class="card-sub"><span class="en">FTAS QR terminals &middot; actual counts, not cameras</span><span class="ja">FTASのQR端末による実測回答数（カメラではありません）</span></div>
+          <div class="big-num" id="camera-big">-<span class="unit"> responses, this season</span></div>
           <div id="camera-rows"></div>
         </div>
 
         <div class="card" style="grid-column:1/-1;">
           <div class="card-title"><span class="en">Hotel occupancy</span><span class="ja">ホテル稼働率</span></div>
-          <div class="card-sub"><span class="en">Illustrative, Fukui City area</span><span class="ja">イメージ値、福井市エリア</span></div>
+          <div class="card-sub"><span class="en">Booked rooms &divide; 576 rooms &middot; Awara Onsen, 10 hotels &middot; 2023-10-01 to 2026-09-09</span><span class="ja">予約室数÷全576室 ・ あわら温泉10施設 ・ 2023-10-01〜2026-09-09</span></div>
           <div class="big-num" id="hotel-big">-<span class="unit">% occupied</span></div>
           <div class="gauge-track"><div class="gauge-fill" id="hotel-fill" style="background:#2a78d6;"></div></div>
         </div>
@@ -1033,15 +1033,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="li"><span class="line-swatch"></span><span class="en">Actual (camera-detected)</span><span class="ja">実測（カメラ検出）</span></div>
           <div class="li"><span class="line-swatch dashed"></span><span class="en">Predicted (OLS/RF forecast)</span><span class="ja">予測（OLS/RFモデル）</span></div>
         </div>
-        <div class="card-sub" style="margin-top:6px;"><span class="en">DHDE model: R² = 0.81 in-sample · 0.68 chronological hold-out · MAE 1,793 visits/day</span><span class="ja">DHDEモデル：学習データR²=0.81・時系列ホールドアウトR²=0.68・MAE 1,793人/日</span></div>
+        <div class="card-sub" style="margin-top:6px;" id="model-stats"></div>
       </div>
 
       <h2><span class="en">DHDE headline metrics</span><span class="ja">DHDE主要指標</span></h2>
       <div class="stat-grid">
-        <div class="stat-tile"><div class="v"><span class="en">¥11.96B</span><span class="ja">約119.6億円</span></div><div class="l"><span class="en">Annual opportunity gap (~$72.6M)</span><span class="ja">年間機会損失（約7,260万ドル）</span></div></div>
-        <div class="stat-tile"><div class="v">865,917</div><div class="l"><span class="en">Suppressed visits / year (4 nodes)</span><span class="ja">年間の抑制された来訪数（4ノード）</span></div></div>
-        <div class="stat-tile"><div class="v">6.26×</div><div class="l"><span class="en">Winter vs. summer weather sensitivity</span><span class="ja">冬季と夏季の気象感度の差</span></div></div>
-        <div class="stat-tile"><div class="v">r = 0.549</div><div class="l"><span class="en">Ishikawa → Fukui same-day signal</span><span class="ja">石川→福井の同日相関シグナル</span></div></div>
+        <div class="stat-tile"><div class="v"><span class="en">¥11.96B</span><span class="ja">約119.6億円</span></div><div class="l"><span class="en">Annual opportunity gap (~$72.6M)<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026, not measured here</span></span><span class="ja">年間機会損失（約7,260万ドル）<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026の値、実測ではありません</span></span></div></div>
+        <div class="stat-tile"><div class="v">865,917</div><div class="l"><span class="en">Suppressed visits / year (4 nodes)<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026, not measured here</span></span><span class="ja">年間の抑制された来訪数（4ノード）<br/><span style="opacity:.65">Khanzada &amp; Takemoto 2026の値、実測ではありません</span></span></div></div>
+        <div class="stat-tile"><div class="v" id="stat-winter-drop">-</div><div class="l"><span class="en">Winter vs. peak-season drop (measured, all 9 nodes)</span><span class="ja">冬季とピーク季の落ち込み（実測、9ノード）</span></div></div>
+        <div class="stat-tile"><div class="v" id="stat-ishikawa">-</div><div class="l"><span class="en">Visitors arriving from Ishikawa (measured)</span><span class="ja">石川県からの来訪者比率（実測）</span></div></div>
       </div>
 
       <h2><span class="en">Node detail (live)</span><span class="ja">ノード詳細（ライブ）</span></h2>
@@ -1051,8 +1051,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
       </table>
 
       <div class="caveat">
-        <span class="en"><b>What this is:</b> a rapid demo prototype. Node positions are real; the seasonal time series, live-feed numbers, camera counts, weather alerts, and hotel occupancy are simulated to match the qualitative findings of Khanzada &amp; Takemoto (2026, arXiv:2603.21639) and the broader Hokuriku occupancy-dashboard concept; not a raw data export. Swap in real per-node time series from code4fukui / JMA / the Edge-AI pipeline before a technical audience.</span>
-        <span class="ja"><b>これは何か：</b>簡易デモ用プロトタイプです。ノードの位置情報は実在のものですが、季節ごとの時系列データ、ライブフィードの数値、カメラ計測値、気象アラート、ホテル稼働率はKhanzada &amp; Takemoto (2026, arXiv:2603.21639)の研究知見および北陸観光ダッシュボード構想に沿ったシミュレーション値であり、生データではありません。技術者向けに提示する際は、code4fukui／JMA／Edge-AIパイプラインからの実際のノード別時系列データに差し替えてください。</span>
+        <span class="en"><b>What this is:</b> a working prototype wired to Fukui Prefecture open data. <b>Measured:</b> node coordinates, visit volume, sentiment (NPS), reported inconvenience, digital info-source use and visitor spend all come from <a href="https://github.com/code4fukui/fukui-kanko-survey">code4fukui/fukui-kanko-survey</a> (FTAS, Fukui Prefecture Tourism Federation), 29,862 responses at these nine nodes over 2022--04 to 2026--09; hotel occupancy comes from <a href="https://github.com/code4fukui/fukui-kanko-reservation">code4fukui/fukui-kanko-reservation</a> (576 rooms, Awara Onsen, 10 hotels); current weather is live from JMA AMeDAS and the JMA Fukui forecast. <b>Read the index correctly:</b> &ldquo;actual&rdquo; and &ldquo;predicted&rdquo; are a 0-100 index of <i>survey response volume</i>, a sampled demand proxy, <i>not</i> a visitor headcount. FTAS collects a few dozen responses a day prefecture-wide. <b>Still not measured:</b> per-season weather uses regional normals (JMA live covers only the current season); the &yen;11.96B and 865,917 figures are quoted from Khanzada &amp; Takemoto (2026, arXiv:2603.21639) and only their per-node split is derived here; the reroute corridors and scenario buttons are illustrative what-ifs. Rebuild the data with build_data.py.</span>
+        <span class="ja"><b>これは何か：</b>福井県のオープンデータに接続した実働プロトタイプです。<b>実測値：</b>ノード座標、来訪量、満足度（NPS）、不便さ、オンライン情報源の利用、消費額はすべて<a href="https://github.com/code4fukui/fukui-kanko-survey">code4fukui/fukui-kanko-survey</a>（FTAS、福井県観光連盟）に基づき、本9ノードで2022年-04月〜2026年-09月の29,862件。宿泊稼働率は<a href="https://github.com/code4fukui/fukui-kanko-reservation">code4fukui/fukui-kanko-reservation</a>（あわら温泉10施設・全576室）。現在の気象は気象庁アメダスおよび福井県予報のライブ取得。<b>指数の読み方：</b>「実測」「予測」は<i>アンケート回答量</i>の0〜100指数であり、標本による需要の代理指標です。来訪者数の実数ではありません。FTASの回答は県全体で1日あたり数十件規模です。<b>未実測：</b>季節別の気象は地域平年値（気象庁ライブは現在の季節のみ）。119.6億円および865,917という数値はKhanzada &amp; Takemoto (2026, arXiv:2603.21639) からの引用で、ノード別の按分のみ本データから算出。迂回ルートとシナリオボタンは説明用のシミュレーションです。データはbuild_data.pyで再生成できます。</span>
       </div>
     </aside>
   </div>
@@ -1069,15 +1069,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   // ---------------- Static reference data ----------------
   var NODES = [
-    { id:'tojinbo',   name:'Tojinbo (Node A)',     nameJa:'東尋坊（ノードA）',   role:'Coastal: weather-exposed landmark', roleJa:'沿岸部：気象の影響を受けやすい名所', lat:36.2345, lng:136.1257, hex:'#eb6834', dir:'top',    jma:'Mikuni', jmaJa:'三国',    scale:95,  exposure:1.0 },
-    { id:'station',   name:'Fukui Station (Node B)',nameJa:'福井駅（ノードB）',  role:'Urban transit hub', roleJa:'都市交通ハブ',                  lat:36.0606, lng:136.2216, hex:'#2a78d6', dir:'left',   jma:'Fukui City', jmaJa:'福井',scale:140, exposure:0.4 },
-    { id:'katsuyama', name:'Katsuyama (Node C)',    nameJa:'勝山（ノードC）',    role:'Mountain: dinosaur museum', roleJa:'山間部：恐竜博物館',          lat:36.1146, lng:136.6876, hex:'#1baf7a', dir:'right',  jma:'Katsuyama', jmaJa:'勝山', scale:60,  exposure:0.6 },
-    { id:'rainbow',   name:'Rainbow Line (Node D)', nameJa:'レインボーライン（ノードD）', role:'Scenic drive corridor', roleJa:'景勝ドライブルート',               lat:35.5859, lng:135.8825, hex:'#eda100', dir:'right',  jma:'Mihama', jmaJa:'美浜',    scale:40,  exposure:0.9 },
-    { id:'eiheiji',   name:'Eiheiji Temple',        nameJa:'永平寺',            role:'Heritage buffer site (secondary)', roleJa:'文化遺産の緩衝拠点（副次的）',    lat:36.0554, lng:136.3505, hex:'#4a3aa7', dir:'bottom', jma:'(nearest: Fukui City)', jmaJa:'（福井に最も近い）', scale:55, exposure:0.5 },
-    { id:'awara',     name:'Awara Onsen',           nameJa:'あわら温泉',        role:'Hot-spring resort town', roleJa:'温泉リゾートの町',              lat:36.2069, lng:136.2255, hex:'#c94f7c', dir:'top',    jma:'Awara', jmaJa:'あわら',     scale:50,  exposure:0.5, labelMode:'hover' },
-    { id:'mikuni',    name:'Mikuni Port',           nameJa:'三国湊',            role:'Historic port town, coastal-exposed', roleJa:'歴史的な港町、沿岸部',  lat:36.2211, lng:136.1494, hex:'#3aa7a0', dir:'left',   jma:'Mikuni', jmaJa:'三国',    scale:45,  exposure:0.9, labelMode:'hover' },
-    { id:'maruoka',   name:'Maruoka Castle',        nameJa:'丸岡城',            role:'Historic castle: oldest surviving donjon in Japan', roleJa:'現存する日本最古の天守を持つ歴史的な城', lat:36.1502, lng:136.2764, hex:'#8a6d3b', dir:'right',  jma:'Maruoka (Sakai)', jmaJa:'丸岡（坂井市）', scale:35, exposure:0.6, labelMode:'hover' },
-    { id:'ono',       name:'Ono Castle Town',       nameJa:'大野城下町',        role:'"Little Kyoto of Echizen", mountain valley castle town', roleJa:'「越前の小京都」、山あいの城下町', lat:35.9784, lng:136.4874, hex:'#6b8e23', dir:'bottom', jma:'Ono', jmaJa:'大野', scale:40, exposure:0.7, labelMode:'hover' }
+    { id:'tojinbo',   name:'Tojinbo (Node A)',     nameJa:'東尋坊（ノードA）',   role:'Coastal: weather-exposed landmark', roleJa:'沿岸部：気象の影響を受けやすい名所', lat:36.2376685, lng:136.1265737, hex:'#eb6834', dir:'top',    jma:'Mikuni', jmaJa:'三国',    scale:95,  exposure:1.0 },
+    { id:'station',   name:'Fukui Station (Node B)',nameJa:'福井駅（ノードB）',  role:'Urban transit hub', roleJa:'都市交通ハブ',                  lat:36.061515, lng:136.2224369, hex:'#2a78d6', dir:'left',   jma:'Fukui City', jmaJa:'福井',scale:140, exposure:0.4 },
+    { id:'katsuyama', name:'Katsuyama (Node C)',    nameJa:'勝山（ノードC）',    role:'Mountain: dinosaur museum', roleJa:'山間部：恐竜博物館',          lat:36.083927, lng:136.507083, hex:'#1baf7a', dir:'right',  jma:'Katsuyama', jmaJa:'勝山', scale:60,  exposure:0.6 },
+    { id:'rainbow',   name:'Rainbow Line (Node D)', nameJa:'レインボーライン（ノードD）', role:'Scenic drive corridor', roleJa:'景勝ドライブルート',               lat:35.601189, lng:135.8688963, hex:'#eda100', dir:'right',  jma:'Mihama', jmaJa:'美浜',    scale:40,  exposure:0.9 },
+    { id:'eiheiji',   name:'Eiheiji Temple',        nameJa:'永平寺',            role:'Heritage buffer site (secondary)', roleJa:'文化遺産の緩衝拠点（副次的）',    lat:36.0567754, lng:136.3568759, hex:'#4a3aa7', dir:'bottom', jma:'(nearest: Fukui City)', jmaJa:'（福井に最も近い）', scale:55, exposure:0.5 },
+    { id:'awara',     name:'Awara Onsen',           nameJa:'あわら温泉',        role:'Hot-spring resort town', roleJa:'温泉リゾートの町',              lat:36.2256037, lng:136.1941521, hex:'#c94f7c', dir:'top',    jma:'Awara', jmaJa:'あわら',     scale:50,  exposure:0.5, labelMode:'hover' },
+    { id:'mikuni',    name:'Mikuni Port',           nameJa:'三国湊',            role:'Historic port town, coastal-exposed', roleJa:'歴史的な港町、沿岸部',  lat:36.21432, lng:136.149227, hex:'#3aa7a0', dir:'left',   jma:'Mikuni', jmaJa:'三国',    scale:45,  exposure:0.9, labelMode:'hover' },
+    { id:'maruoka',   name:'Maruoka Castle',        nameJa:'丸岡城',            role:'Historic castle: oldest surviving donjon in Japan', roleJa:'現存する日本最古の天守を持つ歴史的な城', lat:36.152345, lng:136.272103, hex:'#8a6d3b', dir:'right',  jma:'Maruoka (Sakai)', jmaJa:'丸岡（坂井市）', scale:35, exposure:0.6, labelMode:'hover' },
+    { id:'ono',       name:'Ono Castle Town',       nameJa:'大野城下町',        role:'"Little Kyoto of Echizen", mountain valley castle town', roleJa:'「越前の小京都」、山あいの城下町', lat:35.986586, lng:136.483062, hex:'#6b8e23', dir:'bottom', jma:'Ono', jmaJa:'大野', scale:40, exposure:0.7, labelMode:'hover' }
   ];
   var NODE_BY_ID = {}; NODES.forEach(function(n){ NODE_BY_ID[n.id]=n; });
   var KANAZAWA = { name:'Kanazawa / Ishikawa Pref.', nameJa:'金沢市／石川県', lat:36.5780, lng:136.6485 };
@@ -1251,7 +1251,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     spring: 'Mild weather, moderate demand. Forecast tracks arrivals closely across most nodes.',
     summer: 'Peak scenic-corridor demand at Rainbow Line & Katsuyama. Lowest weather friction (ΔR² 0.021).',
     autumn: 'Foliage season lifts Eiheiji, Katsuyama & Maruoka; coastal wind sensitivity begins rising.',
-    winter: 'Weather is 6.26× more disruptive than summer. Tojinbo & Mikuni’s gap between predicted intent and actual arrivals drives most of the ¥11.96B annual loss; Awara Onsen is the one node winter actually helps.'
+    winter: 'Measured winter collapse: Rainbow Line falls to 7.6 on the response index from 34.9 in summer, and Ono to 8.4 from 52.4 in autumn. Tojinbo carries the highest reported inconvenience of any node (27.2% of respondents). Awara Onsen holds up best, as its own booking data confirms.'
   };
   var SEASON_NOTES_JA = {
     spring: '穏やかな気候で需要も中程度。ほとんどのノードで予測と実測が近い値に。',
@@ -1272,53 +1272,130 @@ svg.leaflet-image-layer.leaflet-interactive path {
     winter: ['静か','人通りのない通り','閉まった店']
   };
 
-  // actual/predicted/rsi/sentiment on 0-100 index; temp C, precip mm/day, wind m/s, snow cm; hotelOcc = % occupied (season-level, illustrative)
-  var SEASON_DATA = {
-    spring:{ severity:0.6, hotelOcc:58, nodes:{
-      tojinbo:  {actual:62,predicted:68,rsi:70,sentiment:58,tempC:12,precipMm:8, windMs:6.5, snowCm:0},
-      station:  {actual:55,predicted:57,rsi:60,sentiment:55,tempC:13,precipMm:7, windMs:4.0, snowCm:0},
-      katsuyama:{actual:48,predicted:50,rsi:52,sentiment:60,tempC:10,precipMm:9, windMs:3.5, snowCm:0},
-      rainbow:  {actual:35,predicted:40,rsi:38,sentiment:50,tempC:11,precipMm:9, windMs:5.0, snowCm:0},
-      eiheiji:  {actual:40,predicted:42,rsi:44,sentiment:62,tempC:10,precipMm:9, windMs:3.0, snowCm:0},
-      awara:    {actual:50,predicted:52,rsi:54,sentiment:64,tempC:12,precipMm:8, windMs:5.0, snowCm:0},
-      mikuni:   {actual:30,predicted:33,rsi:35,sentiment:55,tempC:12,precipMm:8, windMs:7.0, snowCm:0},
-      maruoka:  {actual:62,predicted:64,rsi:66,sentiment:72,tempC:13,precipMm:8, windMs:4.0, snowCm:0},
-      ono:      {actual:44,predicted:46,rsi:47,sentiment:66,tempC:10,precipMm:9, windMs:3.5, snowCm:0}
-    }},
-    summer:{ severity:0.2, hotelOcc:82, nodes:{
-      tojinbo:  {actual:88,predicted:90,rsi:92,sentiment:70,tempC:27,precipMm:14,windMs:4.0, snowCm:0},
-      station:  {actual:70,predicted:71,rsi:74,sentiment:65,tempC:28,precipMm:12,windMs:3.0, snowCm:0},
-      katsuyama:{actual:82,predicted:83,rsi:85,sentiment:78,tempC:24,precipMm:15,windMs:2.5, snowCm:0},
-      rainbow:  {actual:95,predicted:96,rsi:90,sentiment:82,tempC:25,precipMm:13,windMs:4.5, snowCm:0},
-      eiheiji:  {actual:50,predicted:51,rsi:48,sentiment:68,tempC:24,precipMm:14,windMs:2.0, snowCm:0},
-      awara:    {actual:45,predicted:46,rsi:48,sentiment:60,tempC:28,precipMm:12,windMs:3.0, snowCm:0},
-      mikuni:   {actual:55,predicted:57,rsi:58,sentiment:62,tempC:26,precipMm:13,windMs:4.5, snowCm:0},
-      maruoka:  {actual:40,predicted:41,rsi:42,sentiment:55,tempC:27,precipMm:12,windMs:2.5, snowCm:0},
-      ono:      {actual:50,predicted:51,rsi:52,sentiment:68,tempC:25,precipMm:14,windMs:2.0, snowCm:0}
-    }},
-    autumn:{ severity:1.0, hotelOcc:74, nodes:{
-      tojinbo:  {actual:58,predicted:65,rsi:68,sentiment:55,tempC:16,precipMm:10,windMs:7.0, snowCm:0},
-      station:  {actual:52,predicted:54,rsi:58,sentiment:54,tempC:17,precipMm:9, windMs:4.5, snowCm:0},
-      katsuyama:{actual:60,predicted:62,rsi:63,sentiment:66,tempC:13,precipMm:10,windMs:4.0, snowCm:0},
-      rainbow:  {actual:55,predicted:60,rsi:55,sentiment:60,tempC:14,precipMm:10,windMs:6.0, snowCm:0},
-      eiheiji:  {actual:68,predicted:69,rsi:66,sentiment:74,tempC:13,precipMm:10,windMs:3.5, snowCm:0},
-      awara:    {actual:58,predicted:60,rsi:62,sentiment:70,tempC:16,precipMm:9, windMs:4.5, snowCm:0},
-      mikuni:   {actual:34,predicted:38,rsi:40,sentiment:52,tempC:15,precipMm:10,windMs:7.5, snowCm:0},
-      maruoka:  {actual:56,predicted:58,rsi:57,sentiment:68,tempC:14,precipMm:9, windMs:3.5, snowCm:0},
-      ono:      {actual:52,predicted:54,rsi:53,sentiment:70,tempC:12,precipMm:10,windMs:3.0, snowCm:0}
-    }},
-    winter:{ severity:2.6, hotelOcc:31, nodes:{
-      tojinbo:  {actual:22,predicted:78,rsi:80,sentiment:34,tempC:3, precipMm:25,windMs:12.5,snowCm:18},
-      station:  {actual:45,predicted:58,rsi:62,sentiment:44,tempC:3, precipMm:20,windMs:8.0, snowCm:10},
-      katsuyama:{actual:38,predicted:42,rsi:40,sentiment:52,tempC:0, precipMm:15,windMs:5.0, snowCm:38},
-      rainbow:  {actual:4, predicted:30,rsi:25,sentiment:30,tempC:2, precipMm:22,windMs:10.0,snowCm:30},
-      eiheiji:  {actual:42,predicted:44,rsi:41,sentiment:58,tempC:1, precipMm:18,windMs:4.0, snowCm:22},
-      awara:    {actual:72,predicted:68,rsi:65,sentiment:78,tempC:2, precipMm:20,windMs:9.0, snowCm:24},
-      mikuni:   {actual:12,predicted:45,rsi:48,sentiment:28,tempC:3, precipMm:24,windMs:13.0,snowCm:16},
-      maruoka:  {actual:28,predicted:34,rsi:32,sentiment:48,tempC:1, precipMm:16,windMs:6.0, snowCm:20},
-      ono:      {actual:30,predicted:36,rsi:34,sentiment:50,tempC:-1,precipMm:14,windMs:4.5, snowCm:42}
-    }}
+  // ================= REAL DATA =================
+  // Tourism figures below are computed from Fukui Prefecture open data, not invented.
+  //   survey      : github.com/code4fukui/fukui-kanko-survey  (FTAS, Fukui Tourism
+  //                 Federation) -- one row per respondent, updated daily by GitHub
+  //                 Actions. 102,603 respondents, 29,862 of them at these 9 nodes,
+  //                 2022-04..2026-09.
+  //   reservations: github.com/code4fukui/fukui-kanko-reservation -- nightly booked
+  //                 rooms across 576 rooms in 10 Awara Onsen hotels.
+  // Regenerate with build_data.py; this block is its output, pasted verbatim.
+  var DHDE_DATA = {"meta":{"generatedAt":"2026-09-09T10:23:31+00:00","source":"code4fukui/fukui-kanko-survey (FTAS, Fukui Prefecture Tourism Federation)","sourceUrl":"https://github.com/code4fukui/fukui-kanko-survey","license":"not declared by the source repo; attribution given, terms unconfirmed","attribution":"福井県観光連盟 (Fukui Tourism Federation) / FTAS, via Code for Fukui","monthsCovered":["2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09"],"respondentsTotal":102603,"respondentsAtNodes":29862,"indexBase":{"maxNodeSeasonResponses":1786,"note":"actual/predicted are a 0-100 survey-response volume index, not visitor headcount"},"model":{"spec":"OLS: actual_idx ~ prev + digital + overnight + mean_NPS + revisit_intent + node FE","trainThrough":"2025-08","nTrain":320,"nTest":114,"r2InSample":0.594,"r2Holdout":0.562,"maeIndexPoints":1.5,"maeResponses":26.7},"econShare":{"tojinbo":0.0404,"station":0.14817,"katsuyama":0.12017,"rainbow":0.02934,"eiheiji":0.12059,"awara":0.42592,"mikuni":0.04173,"maruoka":0.02401,"ono":0.04967},"coverage":{"tojinbo/spring":530,"station/spring":1221,"katsuyama/spring":1516,"rainbow/spring":551,"eiheiji/spring":1649,"awara/spring":1684,"mikuni/spring":345,"maruoka/spring":528,"ono/spring":798,"tojinbo/summer":578,"station/summer":1077,"katsuyama/summer":1393,"rainbow/summer":623,"eiheiji/summer":1691,"awara/summer":1725,"mikuni/summer":318,"maruoka/summer":475,"ono/summer":765,"tojinbo/autumn":545,"station/autumn":1264,"katsuyama/autumn":773,"rainbow/autumn":485,"eiheiji/autumn":1305,"awara/autumn":1786,"mikuni/autumn":252,"maruoka/autumn":598,"ono/autumn":935,"tojinbo/winter":324,"station/winter":839,"katsuyama/winter":645,"rainbow/winter":136,"eiheiji/winter":681,"awara/winter":1119,"mikuni/winter":245,"maruoka/winter":313,"ono/winter":150}},"nodes":{"station":{"areaId":300004,"areaName":"福井駅前 エリア","lat":36.061515,"lng":136.2224369,"city":"福井市"},"tojinbo":{"areaId":300006,"areaName":"東尋坊 エリア","lat":36.2376685,"lng":136.1265737,"city":"坂井市"},"maruoka":{"areaId":300008,"areaName":"丸岡城 エリア","lat":36.152345,"lng":136.272103,"city":"坂井市"},"awara":{"areaId":300011,"areaName":"あわら湯のまち エリア","lat":36.2256037,"lng":136.1941521,"city":"あわら市"},"ono":{"areaId":300015,"areaName":"越前大野城・城下町 エリア","lat":35.986586,"lng":136.483062,"city":"大野市"},"katsuyama":{"areaId":300019,"areaName":"かつやま恐竜の森 エリア","lat":36.083927,"lng":136.507083,"city":"勝山市"},"eiheiji":{"areaId":300025,"areaName":"大本山 永平寺 エリア","lat":36.0567754,"lng":136.3568759,"city":"永平寺町"},"rainbow":{"areaId":300059,"areaName":"レインボーライン エリア","lat":35.601189,"lng":135.8688963,"city":"美浜町"},"mikuni":{"areaId":300076,"areaName":"三国湊 エリア","lat":36.21432,"lng":136.149227,"city":"坂井市"}},"seasons":{"spring":{"hotelOcc":56.5,"overnightShare":72.8,"ishikawaShare":4.87,"nodes":{"tojinbo":{"actual":29.7,"predicted":24.5,"rsi":56.2,"sentiment":78.7,"friction":22.1,"spendYen":5382,"n":530},"station":{"actual":68.4,"predicted":65.4,"rsi":55.9,"sentiment":79.2,"friction":19.2,"spendYen":7830,"n":1221},"katsuyama":{"actual":84.9,"predicted":72.6,"rsi":59.0,"sentiment":84.3,"friction":16.5,"spendYen":6589,"n":1516},"rainbow":{"actual":30.9,"predicted":22.9,"rsi":62.1,"sentiment":81.5,"friction":15.1,"spendYen":4031,"n":551},"eiheiji":{"actual":92.3,"predicted":64.4,"rsi":57.9,"sentiment":82.2,"friction":15.8,"spendYen":5190,"n":1649},"awara":{"actual":94.3,"predicted":91.1,"rsi":63.5,"sentiment":79.1,"friction":13.1,"spendYen":15162,"n":1684},"mikuni":{"actual":19.3,"predicted":19.2,"rsi":49.0,"sentiment":78.2,"friction":15.4,"spendYen":8459,"n":345},"maruoka":{"actual":29.6,"predicted":30.9,"rsi":50.4,"sentiment":76.4,"friction":14.4,"spendYen":2970,"n":528},"ono":{"actual":44.7,"predicted":35.5,"rsi":54.9,"sentiment":76.0,"friction":16.8,"spendYen":4596,"n":798}}},"summer":{"hotelOcc":57.6,"overnightShare":74.4,"ishikawaShare":3.79,"nodes":{"tojinbo":{"actual":32.4,"predicted":39.4,"rsi":60.2,"sentiment":76.5,"friction":22.5,"spendYen":4527,"n":578},"station":{"actual":60.3,"predicted":74.7,"rsi":53.5,"sentiment":77.4,"friction":19.0,"spendYen":7656,"n":1077},"katsuyama":{"actual":78.0,"predicted":80.0,"rsi":62.8,"sentiment":84.8,"friction":18.4,"spendYen":6800,"n":1393},"rainbow":{"actual":34.9,"predicted":42.6,"rsi":57.9,"sentiment":81.6,"friction":13.6,"spendYen":3880,"n":623},"eiheiji":{"actual":94.7,"predicted":100.0,"rsi":56.1,"sentiment":81.6,"friction":13.1,"spendYen":5407,"n":1691},"awara":{"actual":96.6,"predicted":100.0,"rsi":65.1,"sentiment":79.7,"friction":11.0,"spendYen":16353,"n":1725},"mikuni":{"actual":17.8,"predicted":22.7,"rsi":51.6,"sentiment":75.8,"friction":13.2,"spendYen":6901,"n":318},"maruoka":{"actual":26.6,"predicted":34.2,"rsi":48.2,"sentiment":75.6,"friction":9.7,"spendYen":3113,"n":475},"ono":{"actual":42.8,"predicted":53.5,"rsi":51.6,"sentiment":75.4,"friction":17.5,"spendYen":4615,"n":765}}},"autumn":{"hotelOcc":63.9,"overnightShare":72.3,"ishikawaShare":4.08,"nodes":{"tojinbo":{"actual":30.5,"predicted":28.1,"rsi":59.3,"sentiment":76.6,"friction":25.5,"spendYen":4729,"n":545},"station":{"actual":70.8,"predicted":64.5,"rsi":55.2,"sentiment":76.8,"friction":22.1,"spendYen":8005,"n":1264},"katsuyama":{"actual":43.3,"predicted":54.8,"rsi":60.0,"sentiment":83.4,"friction":14.6,"spendYen":6377,"n":773},"rainbow":{"actual":27.2,"predicted":27.9,"rsi":54.6,"sentiment":81.6,"friction":12.2,"spendYen":3791,"n":485},"eiheiji":{"actual":73.1,"predicted":74.1,"rsi":55.9,"sentiment":82.4,"friction":17.0,"spendYen":5624,"n":1305},"awara":{"actual":100.0,"predicted":96.0,"rsi":67.4,"sentiment":79.2,"friction":14.7,"spendYen":17011,"n":1786},"mikuni":{"actual":14.1,"predicted":12.6,"rsi":54.4,"sentiment":78.5,"friction":17.9,"spendYen":8129,"n":252},"maruoka":{"actual":33.5,"predicted":27.2,"rsi":47.2,"sentiment":75.0,"friction":13.9,"spendYen":3172,"n":598},"ono":{"actual":52.4,"predicted":38.6,"rsi":52.7,"sentiment":76.3,"friction":17.6,"spendYen":4257,"n":935}}},"winter":{"hotelOcc":51.2,"overnightShare":76.7,"ishikawaShare":4.81,"nodes":{"tojinbo":{"actual":18.1,"predicted":25.1,"rsi":58.6,"sentiment":76.0,"friction":27.2,"spendYen":4861,"n":324},"station":{"actual":47.0,"predicted":57.3,"rsi":54.0,"sentiment":77.4,"friction":17.5,"spendYen":8779,"n":839},"katsuyama":{"actual":36.1,"predicted":45.3,"rsi":59.1,"sentiment":85.5,"friction":19.1,"spendYen":6560,"n":645},"rainbow":{"actual":7.6,"predicted":17.3,"rsi":51.5,"sentiment":83.8,"friction":7.4,"spendYen":3768,"n":136},"eiheiji":{"actual":38.1,"predicted":56.8,"rsi":56.4,"sentiment":81.7,"friction":15.9,"spendYen":5405,"n":681},"awara":{"actual":62.7,"predicted":81.3,"rsi":66.3,"sentiment":79.2,"friction":15.7,"spendYen":15478,"n":1119},"mikuni":{"actual":13.7,"predicted":12.1,"rsi":54.3,"sentiment":77.6,"friction":15.9,"spendYen":11333,"n":245},"maruoka":{"actual":17.5,"predicted":22.6,"rsi":49.5,"sentiment":74.8,"friction":12.8,"spendYen":2474,"n":313},"ono":{"actual":8.4,"predicted":23.0,"rsi":50.0,"sentiment":76.1,"friction":15.3,"spendYen":4350,"n":150}}}},"reservations":{"scope":"Awara Onsen, 10 hotels","totalRooms":576,"dateRange":["2023-10-01","2026-09-09"],"occupancyPct":{"spring":56.5,"summer":57.6,"autumn":63.9,"winter":51.2},"guestsPerNight":{"spring":956,"summer":1050,"autumn":1051,"winter":859},"revenuePerNightYen":{"spring":25195323,"summer":27189905,"autumn":28265544,"winter":26726630},"avgFeePerStayYen":106886,"bookingCurveRooms":{"spring":{"0":107.5,"7":102.2,"14":95.0,"30":74.5,"60":40.4,"90":21.4},"summer":{"0":114.4,"7":106.1,"14":94.7,"30":71.2,"60":39.6,"90":23.1},"autumn":{"0":114.0,"7":110.1,"14":104.8,"30":89.2,"60":61.2,"90":41.9},"winter":{"0":93.0,"7":91.0,"14":86.3,"30":72.5,"60":47.3,"90":28.7}},"forwardBookedNights":90,"forwardBookedThrough":"2026-12-08"}};
+
+  // IMPORTANT: `actual` and `predicted` are a 0-100 index of SURVEY RESPONSE VOLUME
+  // (indexed to the busiest node-season, 1,786 responses), not a visitor headcount.
+  // FTAS collects a few dozen responses a day prefecture-wide, so this is a sampled
+  // demand proxy. The UI must never call it a footfall count.
+  var INDEX_BASE = DHDE_DATA.meta.indexBase.maxNodeSeasonResponses;
+
+  // code4fukui publishes no weather, so the timeline needs a per-season baseline to
+  // scrub through. These are regional seasonal normals used ONLY as that baseline;
+  // live JMA observations overwrite the current season's values once fetched, and
+  // the caveat box says so. They are the one remaining non-measured input.
+  var WEATHER_NORMALS = {
+    spring:{ tojinbo:{tempC:12,precipMm:8, windMs:6.5,snowCm:0}, station:{tempC:13,precipMm:7, windMs:4.0,snowCm:0},
+             katsuyama:{tempC:10,precipMm:9,windMs:3.5,snowCm:0}, rainbow:{tempC:11,precipMm:9,windMs:5.0,snowCm:0},
+             eiheiji:{tempC:10,precipMm:9,windMs:3.0,snowCm:0}, awara:{tempC:12,precipMm:8,windMs:5.0,snowCm:0},
+             mikuni:{tempC:12,precipMm:8,windMs:7.0,snowCm:0}, maruoka:{tempC:13,precipMm:8,windMs:4.0,snowCm:0},
+             ono:{tempC:10,precipMm:9,windMs:3.5,snowCm:0} },
+    summer:{ tojinbo:{tempC:27,precipMm:14,windMs:4.0,snowCm:0}, station:{tempC:28,precipMm:12,windMs:3.0,snowCm:0},
+             katsuyama:{tempC:24,precipMm:15,windMs:2.5,snowCm:0}, rainbow:{tempC:25,precipMm:13,windMs:4.5,snowCm:0},
+             eiheiji:{tempC:24,precipMm:14,windMs:2.0,snowCm:0}, awara:{tempC:28,precipMm:12,windMs:3.0,snowCm:0},
+             mikuni:{tempC:26,precipMm:13,windMs:4.5,snowCm:0}, maruoka:{tempC:27,precipMm:12,windMs:2.5,snowCm:0},
+             ono:{tempC:25,precipMm:14,windMs:2.0,snowCm:0} },
+    autumn:{ tojinbo:{tempC:16,precipMm:10,windMs:7.0,snowCm:0}, station:{tempC:17,precipMm:9, windMs:4.5,snowCm:0},
+             katsuyama:{tempC:13,precipMm:10,windMs:4.0,snowCm:0}, rainbow:{tempC:14,precipMm:10,windMs:6.0,snowCm:0},
+             eiheiji:{tempC:13,precipMm:10,windMs:3.5,snowCm:0}, awara:{tempC:16,precipMm:9,windMs:4.5,snowCm:0},
+             mikuni:{tempC:15,precipMm:10,windMs:7.5,snowCm:0}, maruoka:{tempC:14,precipMm:9,windMs:3.5,snowCm:0},
+             ono:{tempC:12,precipMm:10,windMs:3.0,snowCm:0} },
+    winter:{ tojinbo:{tempC:3,precipMm:25,windMs:12.5,snowCm:18}, station:{tempC:3,precipMm:20,windMs:8.0,snowCm:10},
+             katsuyama:{tempC:0,precipMm:15,windMs:5.0,snowCm:38}, rainbow:{tempC:2,precipMm:22,windMs:10.0,snowCm:30},
+             eiheiji:{tempC:1,precipMm:18,windMs:4.0,snowCm:22}, awara:{tempC:2,precipMm:20,windMs:9.0,snowCm:24},
+             mikuni:{tempC:3,precipMm:24,windMs:13.0,snowCm:16}, maruoka:{tempC:1,precipMm:16,windMs:6.0,snowCm:20},
+             ono:{tempC:-1,precipMm:14,windMs:4.5,snowCm:42} }
   };
+
+  // Filled by fetchJMA(). Until then (and forever, if JMA is unreachable) the page
+  // runs on normals alone and simply never claims to be live.
+  var JMA_LIVE = { ok:false, obs:{}, station:{}, forecast:null, observedJst:null };
+  // Filled by fetchLiveCounts(): the real daily response counter from all-cnt.csv.
+  var LIVE_COUNTS = { ok:false, recent:[], today:0, yesterday:0, latestDay:null };
+
+  // Weather severity index the alert logic already expects, derived from the values
+  // actually in play (live where available, normals otherwise) rather than hand-set.
+  function severityFrom(nodes){
+    var worst = 0;
+    NODES.forEach(function(n){
+      var d = nodes[n.id]; if (!d) return;
+      var s = (d.windMs/12)*1.1 + (d.precipMm/25)*1.0 + (d.snowCm/40)*1.2 + (d.tempC < 2 ? 0.5 : 0);
+      if (s > worst) worst = s;
+    });
+    return Math.round(worst*100)/100;
+  }
+
+  function buildSeasonData(){
+    var out = {};
+    SEASON_KEYS.forEach(function(key){
+      var src = DHDE_DATA.seasons[key], wx = WEATHER_NORMALS[key], nodes = {};
+      NODES.forEach(function(n){
+        var d = src.nodes[n.id] || {}, w = wx[n.id] || {tempC:15,precipMm:10,windMs:4,snowCm:0};
+        var live = JMA_LIVE.obs[n.id];
+        var useLive = JMA_LIVE.ok && live && key === currentSeasonKey();
+        nodes[n.id] = {
+          actual: d.actual || 0, predicted: d.predicted || 0,
+          rsi: d.rsi || 0, sentiment: d.sentiment || 0,
+          friction: d.friction || 0, spendYen: d.spendYen || 0, n: d.n || 0,
+          tempC:    useLive && live.tempC    != null ? live.tempC    : w.tempC,
+          precipMm: useLive && live.precipMm != null ? live.precipMm : w.precipMm,
+          windMs:   useLive && live.windMs   != null ? live.windMs   : w.windMs,
+          snowCm:   useLive && live.snowCm   != null ? live.snowCm   : w.snowCm,
+          liveWx:   !!useLive
+        };
+      });
+      out[key] = { severity: severityFrom(nodes), hotelOcc: src.hotelOcc, nodes: nodes };
+    });
+    return out;
+  }
+
+  function currentSeasonKey(){
+    var m = new Date().getMonth()+1;
+    return (m>=3&&m<=5)?'spring':(m>=6&&m<=8)?'summer':(m>=9&&m<=11)?'autumn':'winter';
+  }
+
+  var SEASON_DATA = buildSeasonData();
+
+  // Fill the two measured headline tiles straight from the data, so they can never
+  // drift out of sync with whatever build_data.py last produced.
+  function renderMeasuredStats(){
+    var peak = 0, winter = 0;
+    NODES.forEach(function(n){
+      var w = DHDE_DATA.seasons.winter.nodes[n.id];
+      var best = Math.max(DHDE_DATA.seasons.spring.nodes[n.id].actual,
+                          DHDE_DATA.seasons.summer.nodes[n.id].actual,
+                          DHDE_DATA.seasons.autumn.nodes[n.id].actual);
+      winter += w.actual; peak += best;
+    });
+    var drop = peak ? Math.round((1 - winter/peak)*100) : 0;
+    var ish = SEASON_KEYS.reduce(function(s,k){ return s + DHDE_DATA.seasons[k].ishikawaShare; },0)/4;
+    var a = document.getElementById('stat-winter-drop');
+    var b = document.getElementById('stat-ishikawa');
+    if (a) a.textContent = '-' + drop + '%';
+    if (b) b.textContent = ish.toFixed(1) + '%';
+    var kz = document.getElementById('kz-share');
+    if (kz) kz.textContent = ish.toFixed(1) + '%';
+
+    // Model fit is read from the data, never hand-written: rerunning build_data.py
+    // changes these numbers and the card must follow without anyone remembering to.
+    var mo = DHDE_DATA.meta.model, ms = document.getElementById('model-stats');
+    if (ms) ms.innerHTML =
+      '<span class="en">Fitted on this data (build_data.py): R&sup2; = '+mo.r2InSample+' in-sample &middot; '+
+        mo.r2Holdout+' chronological hold-out (train &le; '+mo.trainThrough+', n='+mo.nTrain+'/'+mo.nTest+') &middot; '+
+        'MAE '+mo.maeIndexPoints+' index pts (~'+Math.round(mo.maeResponses)+' responses/month). Not the paper&rsquo;s figures.</span>'+
+      '<span class="ja">本データで学習（build_data.py）：学習R&sup2;='+mo.r2InSample+'・時系列ホールドアウトR&sup2;='+mo.r2Holdout+
+        '（学習'+mo.trainThrough+'まで、n='+mo.nTrain+'/'+mo.nTest+'）・MAE '+mo.maeIndexPoints+'指数ポイント（月あたり約'+
+        Math.round(mo.maeResponses)+'件）。論文の数値ではありません。</span>';
+  }
 
   function lerp(a,b,f){ return a + (b-a)*f; }
 
@@ -1336,6 +1413,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
         predicted: lerp(a.predicted,b.predicted,frac),
         rsi: lerp(a.rsi,b.rsi,frac),
         sentiment: lerp(a.sentiment,b.sentiment,frac),
+        friction: lerp(a.friction||0,b.friction||0,frac),
+        spendYen: lerp(a.spendYen||0,b.spendYen||0,frac),
+        // Response counts are whole observations, not a continuum: show the count for
+        // whichever season the scrubber is actually nearest rather than a fractional blend.
+        n: (frac < 0.5 ? (a.n||0) : (b.n||0)),
+        liveWx: a.liveWx || b.liveWx,
         tempC: lerp(a.tempC,b.tempC,frac),
         precipMm: lerp(a.precipMm,b.precipMm,frac),
         windMs: lerp(a.windMs,b.windMs,frac),
@@ -1396,10 +1479,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 
   // ---------------- Congestion & weather-alert intelligence ----------------
-  function congestionTier(actual){
-    if (actual < 30) return {label:'Free flow', labelJa:'順調', color:'#0ca30c'};
-    if (actual < 55) return {label:'Moderate', labelJa:'普通', color:'#c98500'};
-    if (actual < 75) return {label:'Congested', labelJa:'混雑', color:'#ec835a'};
+  function congestionTier(actual, friction){
+    // Real signal: share of FTAS respondents at this node who answered 感じた
+    // ("I felt inconvenience") to 不便さ. Thresholds sit at the observed quartiles
+    // across all nodes and seasons, so every tier is reachable on real data.
+    var f = (friction == null) ? 0 : friction;
+    if (f < 14)   return {label:'Free flow', labelJa:'順調', color:'#0ca30c'};
+    if (f < 18.5) return {label:'Moderate', labelJa:'普通', color:'#c98500'};
+    if (f < 23)   return {label:'Congested', labelJa:'混雑', color:'#ec835a'};
     return {label:'Gridlock', labelJa:'立ち往生', color:'#d03b3b'};
   }
 
@@ -1558,7 +1645,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   var kMarker = L.circleMarker([KANAZAWA.lat,KANAZAWA.lng], { radius:8, color:'#8a8a86', weight:2, dashArray:'3,3', fillColor:'#ffffff', fillOpacity:0.4 }).addTo(markerLayer);
   kMarker.bindTooltip(bi(KANAZAWA.name, KANAZAWA.nameJa), {permanent:true, direction:'top', className:'node-label', offset:[0,-6]});
-  kMarker.bindPopup('<b>Kanazawa, Ishikawa Prefecture ／ 金沢市、石川県</b><br>Cross-prefectural leading indicator: same-day correlation r = 0.549 with Tojinbo arrivals.<br><span class="ja">県境を越えた先行指標：東尋坊の来訪者数と同日でr=0.549の相関。</span>');
+  kMarker.bindPopup('<b>Kanazawa, Ishikawa Prefecture ／ 金沢市、石川県</b><br>Cross-prefectural corridor. Measured: <b id="kz-share">-</b> of FTAS respondents at these nodes travelled from Ishikawa. (The r = 0.549 same-day correlation is Khanzada &amp; Takemoto 2026, not measured here.)<br><span class="ja">県境を越えた先行指標：東尋坊の来訪者数と同日でr=0.549の相関。</span>');
 
   var flowLayer = L.layerGroup().addTo(map);
   initRoutePaths();
@@ -1604,7 +1691,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   function congBoostFor(frame, pathId){
     var nodeId = ROUTE_CONGESTION_NODE[baseRouteId(pathId)];
     if (!nodeId) return 1.0;
-    var tier = congestionTier(frame.nodes[nodeId].actual).label;
+    var tier = congestionTier(frame.nodes[nodeId].actual, frame.nodes[nodeId].friction).label;
     if (tier === 'Gridlock') return 1.7;
     if (tier === 'Congested') return 1.3;
     if (tier === 'Moderate') return 1.0;
@@ -1829,11 +1916,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
     NODES.forEach(function(n){
       congHtml += '<div class="mini-row" data-node-id="'+n.id+'" id="cong-row-'+n.id+'"><span class="name"><span class="swatch" id="cong-swatch-'+n.id+'"></span>'+nodeShortBi(n)+'</span>'+
                   '<span class="val" id="cong-val-'+n.id+'"></span></div>';
-      jmaHtml += '<div class="mini-row"><span class="name"><span class="swatch" style="background:'+n.hex+'"></span>'+bi(n.jma, n.jmaJa)+'</span>'+
+      var stn = JMA_LIVE.station[n.id];
+      jmaHtml += '<div class="mini-row"><span class="name"><span class="swatch" style="background:'+n.hex+'"></span>'+
+                 (stn ? stn.name : bi(n.jma, n.jmaJa))+'</span>'+
                  '<span class="val" id="jma-val-'+n.id+'"></span></div>';
       camHtml += '<div class="mini-row"><span class="name"><span class="live-dot" style="width:5px;height:5px;"></span>'+nodeShortBi(n)+'</span><span class="val" id="cam-val-'+n.id+'"></span></div>';
     });
     jmaHtml += '<div style="margin-top:6px;" id="jma-sev-badge"></div>';
+    jmaHtml += '<div class="card-sub" id="jma-live-note" style="margin-top:5px;">'+
+               bi('Seasonal normals (JMA live not yet loaded)','季節平年値（気象庁ライブ未取得）')+'</div>';
     document.getElementById('congestion-rows').innerHTML = congHtml;
     document.getElementById('jma-rows').innerHTML = jmaHtml;
     document.getElementById('camera-rows').innerHTML = camHtml;
@@ -1856,18 +1947,27 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // derived here from each node's weather exposure and visitor scale and labeled
   // "illustrative" in the UI so it isn't mistaken for a per-site result.
   function renderEconDashboard(){
+    // Was an invented exposure x scale weighting. Now the split is the node's real
+    // share of measured spend: mean reported per-visit spend at that node (from the
+    // FTAS エリア総消費額 bands) times its response volume. The prefecture-wide
+    // annual total still comes from the paper; only the split is measured.
     var TOTAL_SUPPRESSED_VISITS = 865917;
-    var weights = {}, totalW = 0;
-    NODES.forEach(function(n){ var w = n.exposure * n.scale; weights[n.id] = w; totalW += w; });
-    var maxW = Math.max.apply(null, NODES.map(function(n){ return weights[n.id]; }));
+    var shares = DHDE_DATA.meta.econShare;
+    var maxShare = Math.max.apply(null, NODES.map(function(n){ return shares[n.id] || 0; }));
     var html = NODES.map(function(n){
-      var share = weights[n.id] / totalW;
+      var share = shares[n.id] || 0;
       var visits = Math.round(TOTAL_SUPPRESSED_VISITS * share);
-      var barPct = Math.round((weights[n.id] / maxW) * 100);
+      var barPct = maxShare ? Math.round((share / maxShare) * 100) : 0;
+      var spend = 0, ns = 0;
+      SEASON_KEYS.forEach(function(k){
+        var d = DHDE_DATA.seasons[k].nodes[n.id];
+        if (d && d.n){ spend += d.spendYen * d.n; ns += d.n; }
+      });
+      var avgSpend = ns ? Math.round(spend/ns) : 0;
       return '<div class="econ-row" data-node-id="'+n.id+'">'+
                '<div class="econ-row-top"><span class="swatch" style="background:'+n.hex+'"></span>'+
                '<span class="econ-row-name">'+nodeShortBi(n)+'</span>'+
-               '<span class="econ-row-val">'+visits.toLocaleString()+'/yr</span></div>'+
+               '<span class="econ-row-val">'+visits.toLocaleString()+'/yr &middot; &yen;'+avgSpend.toLocaleString()+bi('/visit','／人')+'</span></div>'+
                '<div class="econ-bar-track"><div class="econ-bar-fill" style="width:'+barPct+'%;background:'+n.hex+';"></div></div>'+
              '</div>';
     }).join('');
@@ -1911,7 +2011,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       if (overridden.indexOf(id) !== -1) return;
       if (!ROUTE_LAYERS[id]) return; // reroute-only alt routes aren't on the map until active
       var nodeId = ROUTE_CONGESTION_NODE[id];
-      var tier = congestionTier(frame.nodes[nodeId].actual);
+      var tier = congestionTier(frame.nodes[nodeId].actual, frame.nodes[nodeId].friction);
       var base = ROUTE_STYLE[id].opts;
       if (tier.label === 'Gridlock'){
         ROUTE_LAYERS[id].setStyle({ color:'#d03b3b', weight:base.weight+(emphasize?4:2), opacity:0.9, dashArray:base.dashArray||null });
@@ -2033,6 +2133,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   renderViewTabs();
   buildStaticRows();
   renderEconDashboard();
+  renderMeasuredStats();
 
   // ---------------- Language toggle ----------------
   // Rebuilds everything that JS built once at init (names/labels aren't otherwise
@@ -2070,6 +2171,112 @@ svg.leaflet-image-layer.leaflet-interactive path {
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setLang(LANG === 'en' ? 'ja' : 'en'); }
   });
 
+  // ---------------- Live data ----------------
+  // Two live sources, both optional. Every one of these can fail (offline demo,
+  // blocked network, JMA maintenance) and the page just keeps running on the baked
+  // data. Nothing here is allowed to throw into the animation loop.
+  function withTimeout(url, ms){
+    var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var t = setTimeout(function(){ if (ctl) ctl.abort(); }, ms || 6000);
+    return fetch(url, ctl ? {signal:ctl.signal} : {})
+      .then(function(r){ clearTimeout(t); if (!r.ok) throw new Error(r.status); return r; })
+      .catch(function(e){ clearTimeout(t); throw e; });
+  }
+
+  // 1. FTAS daily response counts. This is the genuinely live number on the page:
+  // code4fukui rebuilds all-cnt.csv every day via GitHub Actions.
+  var SURVEY_BASE = 'https://code4fukui.github.io/fukui-kanko-survey';
+  function fetchLiveCounts(){
+    return withTimeout(SURVEY_BASE + '/all-cnt.csv', 8000)
+      .then(function(r){ return r.text(); })
+      .then(function(txt){
+        var lines = txt.trim().split(/\r?\n/); lines.shift();
+        var rows = lines.slice(-30).map(function(l){
+          var p = l.split(','); return { day:p[0], count:parseInt(p[1],10)||0 };
+        });
+        if (!rows.length) return;
+        LIVE_COUNTS.ok = true;
+        LIVE_COUNTS.recent = rows;
+        LIVE_COUNTS.today = rows[rows.length-1].count;
+        LIVE_COUNTS.yesterday = rows.length>1 ? rows[rows.length-2].count : 0;
+        LIVE_COUNTS.latestDay = rows[rows.length-1].day;
+        var el = document.getElementById('live-survey-note');
+        if (el){
+          var d = LIVE_COUNTS.latestDay;
+          el.textContent = bi(
+            'Live: ' + LIVE_COUNTS.today + ' FTAS responses on ' + d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8),
+            'ライブ：' + d.slice(0,4)+'年'+d.slice(4,6)+'月'+d.slice(6,8)+'日のFTAS回答 ' + LIVE_COUNTS.today + '件');
+        }
+      })
+      .catch(function(){ /* baked data stands */ });
+  }
+
+  // 2. JMA. Forecast for the two Fukui subdivisions plus nearest-AMeDAS current
+  // observations per node. Station numbers are resolved by distance from each
+  // node's real coordinates rather than hardcoded, so this survives JMA renumbering.
+  var JMA_BASE = 'https://www.jma.go.jp/bosai';
+  function toDeg(a){ return Array.isArray(a) ? a[0] + a[1]/60 : a; }
+  function pick(o, k){ return (o && o[k] && o[k][0] != null) ? o[k][0] : null; }
+
+  function fetchJMA(){
+    var forecastP = withTimeout(JMA_BASE + '/forecast/data/forecast/180000.json', 8000)
+      .then(function(r){ return r.json(); })
+      .then(function(j){ JMA_LIVE.forecast = j; })
+      .catch(function(){});
+
+    var obsP = withTimeout(JMA_BASE + '/amedas/data/latest_time.txt', 8000)
+      .then(function(r){ return r.text(); })
+      .then(function(ts){
+        // "2026-09-09T11:20:00+09:00" -> "20260909112000". Digits only: JMA's file
+        // names are in JST, so deriving them from a local Date would break the fetch
+        // for every viewer outside Japan.
+        var iso = ts.trim();
+        var stamp = iso.slice(0,4)+iso.slice(5,7)+iso.slice(8,10)+iso.slice(11,13)+iso.slice(14,16)+'00';
+        JMA_LIVE.observedJst = iso.slice(11,16) + ' JST';
+        return Promise.all([
+          withTimeout(JMA_BASE + '/amedas/data/map/' + stamp + '.json', 10000).then(function(r){ return r.json(); }),
+          withTimeout(JMA_BASE + '/amedas/const/amedastable.json', 12000).then(function(r){ return r.json(); })
+        ]).then(function(both){
+          var obs = both[0], table = both[1];
+          NODES.forEach(function(n){
+            var best = null, bestD = Infinity;
+            for (var code in table){
+              if (!obs[code]) continue;               // only stations reporting now
+              var st = table[code];
+              if (!st.lat || !st.lon) continue;
+              var dy = toDeg(st.lat) - n.lat, dx = (toDeg(st.lon) - n.lng) * 0.81;
+              var dist = dy*dy + dx*dx;
+              if (dist < bestD){ bestD = dist; best = code; }
+            }
+            if (!best) return;
+            var o = obs[best];
+            JMA_LIVE.obs[n.id] = {
+              tempC: pick(o,'temp'),
+              precipMm: pick(o,'precipitation24h'),
+              windMs: pick(o,'wind'),
+              snowCm: pick(o,'snow'),
+              km: Math.round(Math.sqrt(bestD) * 111)
+            };
+            JMA_LIVE.station[n.id] = { code: best, name: table[best].kjName || best };
+          });
+          JMA_LIVE.ok = Object.keys(JMA_LIVE.obs).length > 0;
+        });
+      })
+      .catch(function(){});
+
+    return Promise.all([forecastP, obsP]).then(function(){
+      if (!JMA_LIVE.ok && !JMA_LIVE.forecast) return;
+      SEASON_DATA = buildSeasonData();        // live obs now feed the current season
+      refreshLanguageUI();                    // JMA station names changed
+      var el = document.getElementById('jma-live-note');
+      if (el && JMA_LIVE.ok){
+        el.textContent = bi(
+          'Live JMA AMeDAS, observed ' + JMA_LIVE.observedJst + ' \u00b7 nearest station to each node',
+          'ライブ気象庁アメダス観測 ' + JMA_LIVE.observedJst + ' ・ 各ノード最寄りの観測所');
+      }
+    });
+  }
+
   // ---------------- Main animation loop ----------------
   var lastTs = null;
   var domUpdateAcc = 0;
@@ -2081,7 +2288,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     NODES.forEach(function(n){
       var d = frame.nodes[n.id];
       var hex = (STATE.rerouteActive && (n.id==='tojinbo' || n.id==='mikuni')) ? '#d03b3b' : n.hex;
-      var tier = congestionTier(d.actual);
+      var tier = congestionTier(d.actual, d.friction);
       var ringColor = (STATE.viewMode === 'weather') ? weatherTierColor(weatherSeverity01(d)) : tier.color;
       ghostMarkers[n.id].setStyle({ radius: radiusFor(d.predicted), color: hex });
       fillMarkers[n.id].setStyle({ radius: radiusFor(d.actual), fillColor: hex, color: ringColor });
@@ -2130,7 +2337,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     // constant blink/pulse. Updating in place keeps the same element under the cursor.
     NODES.forEach(function(n){
       var d = frame.nodes[n.id];
-      var tier = congestionTier(d.actual);
+      var tier = congestionTier(d.actual, d.friction);
       var isWarn = (tier.label==='Congested'||tier.label==='Gridlock');
       var els = congRowEls[n.id];
       els.root.classList.toggle('warn-row', isWarn);
@@ -2187,7 +2394,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
     // JMA rows, same in-place update pattern as congestion rows above.
     NODES.forEach(function(n){
       var d = frame.nodes[n.id];
-      jmaRowEls[n.id].val.textContent = d.tempC.toFixed(0)+'°C · '+d.precipMm.toFixed(0)+'mm · '+d.windMs.toFixed(1)+'m/s · '+d.snowCm.toFixed(0)+'cm';
+      var live = JMA_LIVE.ok ? JMA_LIVE.obs[n.id] : null;
+      // Live where the station reported it, seasonal normal for anything it omits
+      // (snow depth is only published by snow-capable stations, and only in winter).
+      var t  = (live && live.tempC    != null) ? live.tempC    : d.tempC;
+      var p  = (live && live.precipMm != null) ? live.precipMm : d.precipMm;
+      var w  = (live && live.windMs   != null) ? live.windMs   : d.windMs;
+      var sn = (live && live.snowCm   != null) ? live.snowCm   : d.snowCm;
+      var el = jmaRowEls[n.id].val;
+      el.textContent = t.toFixed(0)+'°C · '+p.toFixed(0)+'mm · '+w.toFixed(1)+'m/s · '+sn.toFixed(0)+'cm';
+      el.style.color = live ? '#0ca30c' : '';
+      el.title = live
+        ? bi('Live JMA observation, '+(live.km!=null?live.km+' km from the node':'nearest station'),
+             '気象庁ライブ観測（ノードから約'+(live.km!=null?live.km:'—')+'km）')
+        : bi('Seasonal normal (no live JMA reading)','季節平年値（気象庁ライブ未取得）');
     });
     document.getElementById('jma-sev-badge').innerHTML = '<span class="sev-badge" style="background:'+sevInfo(frame.severity).color+'">'+bi(sevInfo(frame.severity).label.toUpperCase(), sevInfo(frame.severity).labelJa)+': '+bi('severity','深刻度')+' '+frame.severity.toFixed(1)+'/3</span>';
 
@@ -2196,20 +2416,25 @@ svg.leaflet-image-layer.leaflet-interactive path {
     var total = 0;
     NODES.forEach(function(n){
       var d = frame.nodes[n.id];
-      var count = Math.round(d.actual * n.scale);
+      // Real count of FTAS survey responses recorded at this node this season.
+      var count = Math.round(d.n || 0);
       total += count;
       camRowEls[n.id].val.textContent = count.toLocaleString();
     });
-    document.getElementById('camera-big').innerHTML = total.toLocaleString()+'<span class="unit">/day, all nodes</span>';
+    document.getElementById('camera-big').innerHTML = total.toLocaleString()+'<span class="unit">'+bi(' responses, this season',' 件／当該季節')+'</span>';
 
     // sentiment
     var avgSent = NODES.reduce(function(s,n){return s+frame.nodes[n.id].sentiment;},0)/NODES.length;
-    var sentColor = avgSent<40 ? '#d03b3b' : (avgSent<60 ? '#c98500' : '#0ca30c');
-    var sentLabel = avgSent<40 ? bi('Under-vibrancy risk','閑散リスク') : (avgSent<60 ? bi('Balanced','バランス良好') : bi('Vibrant / comfortable','活気・快適'));
-    document.getElementById('sentiment-fill').style.width = Math.round(avgSent)+'%';
+    // Real mean NPS across these nodes sits in a narrow 74-86 band, so the old
+    // 40/60 thresholds could never fire and the bar would always look full. Tier at
+    // the observed quartiles instead, and stretch the bar over the real range so it
+    // actually moves; the number shown stays the true NPS-derived value.
+    var sentColor = avgSent<77 ? '#c98500' : (avgSent<81 ? '#0ca3a3' : '#0ca30c');
+    var sentLabel = avgSent<77 ? bi('Below Fukui average','県平均を下回る') : (avgSent<81 ? bi('Around average','平均並み') : bi('Above average','平均を上回る'));
+    document.getElementById('sentiment-fill').style.width = Math.max(2, Math.min(100, Math.round((avgSent-70)/20*100)))+'%';
     document.getElementById('sentiment-fill').style.background = sentColor;
     document.getElementById('sentiment-label').textContent = sentLabel;
-    document.getElementById('sentiment-val').textContent = Math.round(avgSent)+'/100';
+    document.getElementById('sentiment-val').textContent = (avgSent/10).toFixed(1)+bi(' NPS',' NPS');
     var chipWords = SEASON_CHIPS[SEASON_KEYS[frame.seasonIndex]];
     var chipWordsJa = SEASON_CHIPS_JA[SEASON_KEYS[frame.seasonIndex]];
     document.getElementById('sentiment-chips').innerHTML = chipWords.map(function(w,i){return '<span class="chip">'+bi(w, chipWordsJa[i])+'</span>';}).join('');
@@ -2274,6 +2499,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 
   setTimeout(function(){ requestAnimationFrame(tick); }, 60);
+
+  // Live sources start after the first frame so a slow network never delays paint.
+  setTimeout(function(){
+    try { fetchLiveCounts(); fetchJMA(); } catch(e){}
+    setInterval(function(){ try { fetchJMA(); } catch(e){} }, 10*60*1000);
+    setInterval(function(){ try { fetchLiveCounts(); } catch(e){} }, 30*60*1000);
+  }, 400);
 
 
 })();
