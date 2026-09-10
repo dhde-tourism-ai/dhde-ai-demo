@@ -6,20 +6,13 @@ wired to Fukui Prefecture open data rather than hardcoded numbers.
 Distributed Human Data Engine · University of Fukui, Headquarters for Regional
 Revitalization · Japan Science and Technology Agency Sakura Science Program.
 
-## Serve it, do not double-click it
-
-**Opening `index.html` from the filesystem disables both live feeds.** Chrome
-refuses cross-origin `fetch()` from a `file://` page whatever CORS headers the
-server sends, so the live FTAS counter and live JMA weather silently do nothing.
-The page still renders correctly from baked data, but nothing on it is live.
-
-Locally:
+## How to Run
+1. Clone the repo
+2. Run:
 
     python3 -m http.server 8080     # then open http://localhost:8080
 
-Published: enable GitHub Pages on this repo (Settings → Pages → deploy from
-branch). Both upstream sources are HTTPS and CORS-open, so the live feeds work
-from Pages with no proxy and no API key.
+
 
 ## Layout
 
