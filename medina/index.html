@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-city="medina"><!-- setCity() re-applies this at startup; set here too so there's no flash of Fukui-mode CSS before the script runs -->
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Fukui / Hokuriku DHDE: Live Population Movement Prototype</title>
+<title>Madinah Heritage Sites: DHDE Tourism-Flow Concept Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>/* required styles */
 
 .leaflet-pane,
@@ -688,6 +691,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --critical:#d03b3b;
     --header-bg:#0b1420;
   }
+  /* Medina mode: Nusuk-style palette (teal/navy/gold) and font, layered on top of the
+     Fukui variables above via the same [data-city] cascade already used elsewhere --
+     every component that reads var(--aqua) etc. re-colors automatically. */
+  html[data-city="medina"]{
+    --aqua:#00a79d;
+    --good:#00a79d;
+    --header-bg:#0a2a2f;
+    --orange:#c99a3b;
+  }
+  html[data-city="medina"] body{ font-family:'Cairo',system-ui,-apple-system,"Segoe UI",sans-serif; }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--surface-2);color:var(--ink-1);}
   .app{display:flex;flex-direction:column;height:100vh;}
@@ -718,12 +731,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .city-btn.active{background:#2a3441;color:#f5f4f0;}
   .city-btn:focus-visible{outline:2px solid #f5d100;outline-offset:2px;}
   .cluster-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:2px;}
-  .site-row{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ink-1);padding:5px 3px;border-radius:5px;}
-  .site-row .swatch2{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;}
-  .site-row .site-names{flex:1;min-width:0;}
-  .site-row .site-en{display:block;font-weight:600;}
-  .site-row .site-ar{display:block;font-size:11.5px;color:var(--ink-muted);direction:rtl;text-align:left;}
-  .site-row .cap-chip{font-size:9.5px;padding:2px 6px;border-radius:10px;background:rgba(11,11,11,0.06);color:var(--ink-muted);white-space:nowrap;flex-shrink:0;}
+  .cap-chip{font-size:9.5px;padding:2px 6px;border-radius:10px;background:rgba(11,11,11,0.06);color:var(--ink-muted);white-space:nowrap;flex-shrink:0;}
   .mform{display:flex;flex-direction:column;gap:9px;}
   .mform-row{display:flex;flex-direction:column;gap:3px;}
   .mform-row.two{flex-direction:row;gap:8px;}
@@ -733,54 +741,129 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .mform .hint{font-size:10.5px;color:var(--ink-muted);line-height:1.4;}
   .mform-submit{margin-top:2px;font-size:12.5px;font-weight:800;padding:9px 10px;border-radius:7px;border:none;background:var(--orange);color:#fff;cursor:pointer;}
   .mform-submit:hover{opacity:.92;}
-  .confirmation-box{background:rgba(12,163,12,0.09);border:1px solid rgba(12,163,12,0.35);border-radius:8px;padding:9px 10px;font-size:12px;color:var(--ink-1);margin-top:8px;}
-  .confirmation-box .code{font-weight:800;font-family:ui-monospace,monospace;letter-spacing:.03em;}
   .medina-view{display:none;}
   .medina-view.active{display:block;}
   table.booking-table{width:100%;border-collapse:collapse;font-size:11px;}
   table.booking-table th{text-align:left;color:var(--ink-muted);font-weight:700;padding:5px 4px;border-bottom:1px solid var(--grid);font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;}
   table.booking-table td{padding:6px 4px;border-bottom:1px solid var(--grid);color:var(--ink-2);vertical-align:top;}
-  .cap-bar-track{height:7px;border-radius:4px;background:var(--grid);overflow:hidden;margin-top:4px;}
+  .cap-bar-track{height:7px;border-radius:4px;background:var(--grid);overflow:hidden;flex:1;min-width:40px;}
   .cap-bar-fill{height:100%;background:var(--aqua);}
   .cap-bar-fill.over{background:var(--critical);}
-  .route-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--ink-2);padding:4px 2px;border-top:1px solid var(--grid);}
-  .route-row:first-child{border-top:none;}
+  .mcap-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--grid);}
+  .mcap-row:first-child{border-top:none;}
+  .mcap-name{font-size:13px;font-weight:600;color:var(--ink-1);flex:1 1 40%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  /* Numbered map pins (Nusuk-style: a number you can look up in the list, not a
-     name floating on the map) plus the info/detail-drawer/booking UI around them. */
-  .medina-pin{width:24px;height:24px;border-radius:50%;color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);font-family:system-ui,sans-serif;}
-  .medina-pin.is-focus{box-shadow:0 0 0 3px rgba(11,11,11,0.28),0 1px 4px rgba(0,0,0,.35);}
-  .num-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:800;flex-shrink:0;}
-  .site-row{cursor:pointer;}
-  .site-row.selected{background:rgba(11,11,11,0.06);font-weight:600;}
-  .info-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--grid);color:var(--ink-muted);font-size:9.5px;font-weight:800;cursor:help;flex-shrink:0;margin-left:5px;}
-  .cluster-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--ink-muted);margin:4px 0 8px 0;}
-  .cluster-legend span{display:inline-flex;align-items:center;gap:4px;}
-  .chip-select{display:flex;flex-wrap:wrap;gap:6px;}
-  .chip-option{font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
-  .chip-option .num-badge{width:16px;height:16px;font-size:9px;}
-  .chip-option.active{background:var(--ink-1);border-color:var(--ink-1);color:#fff;}
-  .slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-  .slot-btn{font-size:11px;font-weight:700;padding:7px 4px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--ink-2);cursor:pointer;text-align:center;}
-  .slot-btn.active{outline:2px solid var(--ink-1);outline-offset:-2px;}
-  .slot-btn.open{border-color:rgba(12,163,12,0.4);background:rgba(12,163,12,0.07);}
-  .slot-btn.filling{border-color:rgba(201,133,0,0.5);background:rgba(201,133,0,0.08);}
-  .slot-btn.full{border-color:rgba(208,59,59,0.4);background:rgba(208,59,59,0.07);color:var(--ink-muted);cursor:not-allowed;}
-  .site-detail-empty{font-size:12px;color:var(--ink-muted);padding:6px 0;}
-  .qr-fake{display:grid;grid-template-columns:repeat(7,6px);grid-template-rows:repeat(7,6px);gap:1px;width:fit-content;margin:2px auto 8px auto;padding:6px;background:#fff;border:1px solid var(--border);border-radius:4px;}
-  .qr-fake span{background:#0b0b0b;border-radius:1px;}
-  .qr-fake span.off{background:transparent;}
-  table.op-table{width:100%;border-collapse:collapse;font-size:11px;}
-  table.op-table th{text-align:left;color:var(--ink-muted);font-weight:700;padding:5px 4px;border-bottom:1px solid var(--grid);font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;}
-  table.op-table td{padding:6px 4px;border-bottom:1px solid var(--grid);color:var(--ink-2);vertical-align:middle;}
-  table.op-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
-  table.op-table .cap-bar-track{width:60px;margin:0;}
+  /* ---- Medina: Nusuk-style numbered site cards, live meters, slot picker, QR ---- */
+  html[data-city="medina"] .mform-submit{background:var(--aqua);}
+  html[data-city="medina"] .legend-notes{font-size:12.5px;line-height:1.55;}
+  html[data-city="medina"] .op-banner{font-size:12px;}
+  /* Match the right-panel (booking/operator console) reading size to the left-panel
+     site cards -- same treatment, not a separate smaller scale. */
+  html[data-city="medina"] .card .card-title{font-size:14.5px;}
+  html[data-city="medina"] .card .card-sub{font-size:12.5px;line-height:1.5;}
+  html[data-city="medina"] .mform label{font-size:12.5px;}
+  html[data-city="medina"] .mform input,html[data-city="medina"] .mform select{font-size:14px;padding:8px 9px;}
+  html[data-city="medina"] .mform .hint{font-size:11.5px;}
+  html[data-city="medina"] .slot-chip{font-size:12.5px;padding:8px 4px;}
+  html[data-city="medina"] .slot-chip .rem{font-size:10.5px;}
+  html[data-city="medina"] table.booking-table{font-size:12.5px;}
+  html[data-city="medina"] table.booking-table th{font-size:10.5px;}
+  html[data-city="medina"] .qr-info{font-size:12.5px;}
+  html[data-city="medina"] .qr-code{font-size:15px;}
+  html[data-city="medina"] .qr-note{font-size:10.5px;}
+  html[data-city="medina"] .route-preview{font-size:12px;}
+  html[data-city="medina"] .mstat .l{font-size:9.5px;}
+  html[data-city="medina"] .cap-chip{font-size:11px;}
+  html[data-city="medina"] h2{font-size:15.5px;}
+  .medina-avg-banner{text-align:center;font-size:14px;font-weight:800;color:var(--ink-1);background:rgba(0,167,157,0.09);border:1px solid rgba(0,167,157,0.25);border-radius:9px;padding:8px 10px;}
+  .msite-cards{display:flex;flex-direction:column;gap:9px;}
+  .msite-card{display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;}
+  .msite-card:hover{border-color:var(--aqua);}
+  .msite-card.selected{border-color:var(--aqua);box-shadow:0 0 0 2px rgba(27,175,122,0.16);}
+  .msite-badge{flex-shrink:0;width:32px;height:32px;border-radius:50%;color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;background:var(--aqua);}
+  .msite-badge.b-B{background:var(--yellow);}
+  .msite-badge.b-outlier{background:var(--critical);}
+  .msite-badge.map-badge{width:46px;height:46px;font-size:19px;border:3px solid #fff;}
+  .morigin-badge{width:42px;height:42px;border-radius:9px;background:var(--header-bg);color:#fff;font-size:21px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.45);border:3px solid var(--orange);}
+  .morigin-label{font-size:11.5px;font-weight:800;color:#fff;background:var(--header-bg);padding:3px 8px;border-radius:6px;white-space:nowrap;}
+  .mpeople-dot{width:8px;height:8px;border-radius:50%;background:var(--ink-1);opacity:.6;}
+  .msite-body{flex:1;min-width:0;}
+  .msite-en{font-size:15px;font-weight:700;color:var(--ink-1);line-height:1.35;display:block;}
+  .msite-ar{font-size:13px;color:var(--ink-muted);direction:rtl;display:block;margin-top:1px;}
+  .msite-live{display:flex;align-items:center;gap:9px;margin-top:8px;}
+  .occ-track{flex:1;height:7px;border-radius:4px;background:var(--grid);overflow:hidden;}
+  .occ-fill{height:100%;background:var(--aqua);border-radius:4px;}
+  .occ-fill.warm{background:var(--yellow);}
+  .occ-fill.hot{background:var(--critical);}
+  .msite-pax{font-size:13.5px;font-weight:800;color:var(--ink-1);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:center;min-width:60px;}
+
+  .mdetail{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-bottom:10px;overflow:hidden;}
+  .mdetail-hero{margin:-11px -12px 10px -12px;height:120px;position:relative;background-size:cover;background-position:center;}
+  .mdetail-hero.illustrated{display:flex;align-items:center;justify-content:center;font-size:44px;}
+  .mdetail-credit{position:absolute;right:6px;bottom:4px;font-size:8.5px;color:#fff;background:rgba(0,0,0,0.45);padding:1px 6px;border-radius:8px;}
+  .mdetail-hero.illustrated .mdetail-credit{background:rgba(0,0,0,0.18);}
+  .mdetail-head{display:flex;align-items:center;gap:9px;}
+  .mdetail-badge{flex-shrink:0;width:28px;height:28px;border-radius:50%;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;background:var(--aqua);}
+  .mdetail-badge.b-B{background:var(--yellow);}
+  .mdetail-badge.b-outlier{background:var(--critical);}
+  .mdetail-titles{flex:1;min-width:0;}
+  .mdetail-en{font-size:14px;font-weight:800;color:var(--ink-1);}
+  .mdetail-ar{font-size:12px;color:var(--ink-muted);direction:rtl;}
+  .mdetail-desc{font-size:11.5px;color:var(--ink-2);line-height:1.5;margin:8px 0 10px 0;}
+  .mstat-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
+  .mstat{background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:6px 7px;text-align:center;}
+  .mstat .v{font-size:15px;font-weight:800;color:var(--ink-1);font-variant-numeric:tabular-nums;}
+  .mstat .l{font-size:8.5px;color:var(--ink-muted);margin-top:1px;text-transform:uppercase;letter-spacing:.03em;}
+  .mdetail-book-btn{width:100%;padding:9px;border:none;border-radius:7px;background:var(--aqua);color:#fff;font-weight:800;font-size:12.5px;cursor:pointer;}
+  .mdetail-book-btn:hover{opacity:.92;}
+  .mdetail-empty{font-size:11.5px;color:var(--ink-muted);text-align:center;padding:14px 6px;}
+
+  .op-banner{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--ink-2);background:rgba(27,175,122,0.09);border:1px solid rgba(27,175,122,0.3);border-radius:7px;padding:6px 9px;margin-bottom:9px;}
+  .slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:2px 0 0 0;}
+  .slot-chip{font-size:11px;font-weight:700;padding:6px 3px;border-radius:7px;border:1px solid var(--border);background:#fff;color:var(--ink-1);cursor:pointer;text-align:center;line-height:1.3;font-variant-numeric:tabular-nums;}
+  .slot-chip:hover{border-color:var(--aqua);}
+  .slot-chip .rem{display:block;font-size:9px;font-weight:600;color:var(--ink-muted);margin-top:1px;}
+  .slot-chip.selected{background:var(--aqua);border-color:var(--aqua);color:#fff;}
+  .slot-chip.selected .rem{color:rgba(255,255,255,0.88);}
+  .slot-chip.full{background:var(--surface-2);color:var(--ink-muted);cursor:not-allowed;opacity:.55;}
+  .slot-chip.full .rem{color:var(--critical);}
+  .slot-chip.past{background:var(--surface-2);color:var(--ink-muted);cursor:not-allowed;filter:blur(0.4px);opacity:.4;}
+  .slot-chip.past .rem{color:var(--ink-muted);}
+  .slot-chip.unsafe{background:rgba(42,120,214,0.08);border-color:rgba(42,120,214,0.3);color:var(--blue);opacity:.7;}
+  .slot-chip.unsafe .rem{color:var(--blue);}
+
+  .qr-confirm{display:flex;gap:12px;align-items:center;background:rgba(27,175,122,0.08);border:1px solid rgba(27,175,122,0.35);border-radius:10px;padding:11px;margin-top:8px;}
+  .qr-confirm canvas{flex-shrink:0;width:60px;height:60px;image-rendering:pixelated;border-radius:4px;background:#fff;}
+  .qr-info{flex:1;font-size:11.5px;color:var(--ink-1);line-height:1.5;}
+  .qr-code{font-family:ui-monospace,monospace;font-weight:800;font-size:13.5px;letter-spacing:.03em;color:var(--aqua);display:block;}
+  .qr-note{font-size:9.5px;color:var(--ink-muted);margin-top:3px;display:block;}
+  .mbooking-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--grid);}
+  .mbooking-row:first-child{border-top:none;}
+  .mbooking-qr{flex-shrink:0;border-radius:5px;image-rendering:pixelated;background:#fff;}
+  .mbooking-info{font-size:12.5px;color:var(--ink-2);line-height:1.45;}
+  .mbooking-info .code{font-family:ui-monospace,monospace;font-weight:800;color:var(--ink-1);font-size:13px;}
+
+  .play-btn.aqua{background:var(--aqua);}
+  .timeline-slider.aqua::-webkit-slider-thumb{border-color:var(--aqua);}
+  .timeline-slider.aqua::-moz-range-thumb{border-color:var(--aqua);}
+  .mbus-icon{font-size:30px;line-height:38px;text-align:center;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
+  .medina-toasts{position:absolute;top:10px;right:10px;z-index:650;display:flex;flex-direction:column;gap:6px;max-width:270px;pointer-events:none;}
+  .medina-toast{background:rgba(10,42,47,0.94);color:#fff;font-size:11.5px;line-height:1.4;padding:7px 11px;border-radius:9px;box-shadow:0 2px 12px rgba(0,0,0,.3);opacity:1;transition:opacity .5s ease;}
+  .medina-toast.fade{opacity:0;}
+  .mstatus{font-size:9px;font-weight:700;padding:2px 7px;border-radius:9px;white-space:nowrap;text-transform:uppercase;letter-spacing:.02em;}
+  .mstatus.upcoming{background:rgba(11,11,11,0.07);color:var(--ink-muted);}
+  .mstatus.in-progress{background:rgba(27,175,122,0.14);color:var(--aqua);}
+  .mstatus.ready{background:rgba(237,161,0,0.16);color:var(--yellow);}
+  .mstatus.completed{background:rgba(12,163,12,0.14);color:var(--good);}
+  .signoff-btn{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--aqua);background:#fff;color:var(--aqua);cursor:pointer;}
+  .signoff-btn:disabled{border-color:var(--border);color:var(--ink-muted);cursor:not-allowed;}
+  .route-preview{font-size:10.5px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:6px 8px;margin-top:6px;line-height:1.5;}
 
   .top-banner{flex-shrink:0;padding:9px 20px;font-size:12.5px;font-weight:600;color:#fff;background:var(--good);display:flex;align-items:center;gap:8px;transition:background-color .25s ease;}
   .top-banner .tb-dot{width:8px;height:8px;border-radius:50%;background:#fff;flex-shrink:0;}
   .top-banner .tb-tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:rgba(255,255,255,0.25);padding:2px 7px;border-radius:10px;margin-right:2px;}
 
-  .view-tabs{flex-shrink:0;display:flex;gap:2px;background:var(--header-bg);padding:0 16px;border-bottom:1px solid rgba(255,255,255,0.12);}
+  .view-tabs{flex-shrink:0;display:flex;justify-content:center;gap:2px;background:var(--header-bg);padding:0 16px;border-bottom:1px solid rgba(255,255,255,0.12);}
   .view-tab{font-size:12px;font-weight:700;color:#9aa4b2;background:transparent;border:none;border-bottom:3px solid transparent;padding:9px 14px 7px 14px;cursor:pointer;letter-spacing:.02em;}
   .view-tab:hover{color:#f5f4f0;}
   .view-tab.active{color:#f5f4f0;border-bottom-color:var(--orange);}
@@ -791,13 +874,32 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .left-panel{width:268px;flex-shrink:0;background:var(--surface-1);border-right:1px solid var(--border);overflow-y:auto;padding:14px 14px 24px 14px;transition:width .22s ease,padding .22s ease;}
   .sidebar{width:340px;flex-shrink:0;background:var(--surface-1);border-left:1px solid var(--border);overflow-y:auto;padding:14px 14px 24px 14px;transition:width .22s ease,padding .22s ease;}
   .left-panel.collapsed,.sidebar.collapsed{width:0;padding:0;border:none;overflow:hidden;}
+  .left-panel.no-anim,.sidebar.no-anim{transition:none;}
 
-  .panel-toggle{position:absolute;top:50%;transform:translateY(-50%);width:22px;height:44px;border:1px solid var(--border);background:var(--surface-1);color:var(--ink-2);border-radius:0 6px 6px 0;cursor:pointer;font-size:16px;line-height:1;z-index:650;padding:0;box-shadow:0 1px 4px rgba(0,0,0,0.12);transition:left .22s ease,right .22s ease;}
+  .panel-toggle{position:absolute;top:50%;transform:translateY(-50%);width:22px;height:44px;border:1px solid var(--border);background:var(--surface-1);color:var(--ink-2);border-radius:0 6px 6px 0;cursor:ew-resize;font-size:16px;line-height:1;z-index:650;padding:0;box-shadow:0 1px 4px rgba(0,0,0,0.12);transition:left .22s ease,right .22s ease;touch-action:none;}
   .panel-toggle:hover{background:var(--surface-2);color:var(--ink-1);}
+  .panel-toggle.no-anim{transition:none;}
   .panel-toggle-left{left:268px;border-radius:0 6px 6px 0;}
   .panel-toggle-left.collapsed{left:0;}
   .panel-toggle-right{right:340px;border-radius:6px 0 0 6px;}
   .panel-toggle-right.collapsed{right:0;}
+
+  /* Mobile: panels become full-height slide-over drawers (toggled by the same arrow
+     handles) instead of vanishing outright, so the data is still one tap away. */
+  @media (max-width:860px){
+    .left-panel,.sidebar{position:absolute;top:0;bottom:0;width:84vw;max-width:320px;z-index:700;box-shadow:0 0 26px rgba(0,0,0,0.28);transition:transform .22s ease;}
+    .left-panel{left:0;transform:translateX(0);border-right:1px solid var(--border);}
+    .sidebar{right:0;transform:translateX(0);border-left:1px solid var(--border);}
+    .left-panel.collapsed,.sidebar.collapsed{width:84vw;max-width:320px;padding:14px 14px 24px 14px;border-width:1px;overflow:hidden;}
+    .left-panel.collapsed{transform:translateX(-100%);}
+    .sidebar.collapsed{transform:translateX(100%);}
+    .left-panel.no-anim,.sidebar.no-anim{transition:none;}
+    .panel-toggle-left{left:84vw;}
+    .panel-toggle-left.collapsed{left:0;}
+    .panel-toggle-right{right:84vw;}
+    .panel-toggle-right.collapsed{right:0;}
+  }
+  @media (max-width:420px){ .left-panel,.sidebar,.left-panel.collapsed,.sidebar.collapsed{width:92vw;max-width:none;} .panel-toggle-left{left:92vw;} .panel-toggle-right{right:92vw;} }
 
   .econ-dashboard{flex-shrink:0;background:var(--surface-1);border-top:1px solid var(--border);padding:10px 16px 12px 16px;display:none;gap:20px;align-items:flex-start;max-height:38vh;overflow-y:auto;}
   .econ-stats{display:flex;gap:14px;flex-shrink:0;}
@@ -924,8 +1026,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .node-glow{position:absolute;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);}
   .particle-dot{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 6px currentColor;}
 
-@media (max-width:1080px){ .left-panel{display:none;} }
-@media (max-width:820px){ .sidebar{display:none;} }
+
 </style>
 </head>
 <body>
@@ -939,15 +1040,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
       </div>
       <div class="medina-only">
         <h1>Madinah Heritage Sites: DHDE Tourism-Flow Concept Demo</h1>
-        <p>University of Fukui, Headquarters for Regional Revitalization · with Taibah University, College of Engineering (Madinah) · Sakura Science Program</p>
+        <p>University of Fukui, Headquarters for Regional Revitalization · with Taibah University, College of Engineering (Madinah) · Sakura Science Program, academic tourism-research collaboration</p>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="badge fukui-only"><span class="en">Prototype for Seattle demo showcase</span><span class="ja">シアトルでのデモ展示用プロトタイプ</span></div>
-      <div class="badge medina-only">Concept demo: illustrative data, pending Ministry figures</div>
+      <div class="badge medina-only">Concept demo, illustrative data pending Ministry figures</div>
       <div id="city-toggle" class="city-switch" role="group" aria-label="Switch destination">
-        <button type="button" class="city-btn active" data-city="fukui" title="Fukui / Hokuriku, Japan">🗾 Fukui</button>
-        <button type="button" class="city-btn" data-city="medina" title="Madinah heritage sites, Saudi Arabia">🕌 Madinah</button>
+        <button type="button" class="city-btn" data-city="fukui" title="Fukui / Hokuriku, Japan">🗾 Fukui</button>
+        <button type="button" class="city-btn active" data-city="medina" title="Madinah heritage sites, Saudi Arabia">🕌 Madinah</button>
       </div>
       <div id="lang-toggle" class="lang-switch fukui-only" role="switch" aria-checked="false" tabindex="0" title="Switch language / 言語を切り替え">
         <span class="lang-switch-label lang-switch-ja-label">日本語</span>
@@ -955,8 +1056,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <span class="lang-switch-label lang-switch-en-label is-active">English</span>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <a href="medina/index.html" style="font-size:11px;color:#f5f4f0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);padding:5px 10px;border-radius:20px;white-space:nowrap;text-decoration:none;">🕌 Madinah demo</a>
-        <a href="about/index.html" style="font-size:11px;color:#f5f4f0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);padding:5px 10px;border-radius:20px;white-space:nowrap;text-decoration:none;">ℹ️ About DHDE</a>
+        <a href="../index.html" style="font-size:11px;color:#f5f4f0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);padding:5px 10px;border-radius:20px;white-space:nowrap;text-decoration:none;">🗾 Fukui demo</a>
+        <a href="../about/index.html" style="font-size:11px;color:#f5f4f0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);padding:5px 10px;border-radius:20px;white-space:nowrap;text-decoration:none;">ℹ️ About DHDE</a>
       </div>
     </div>
   </header>
@@ -970,7 +1071,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   <div class="top-banner medina-only" id="medina-top-banner" style="background:var(--violet);">
     <span class="tb-dot"></span>
     <span class="tb-tag">Concept</span>
-    <span>Site positions are estimated from the real distance table, not GPS-surveyed. Capacity and booking figures are illustrative placeholders pending figures from Madinah management.</span>
+    <span>Site positions are derived, not GPS-surveyed. Capacity and live-load numbers are illustrative placeholders pending real figures from Madinah management.</span>
   </div>
 
   <div class="view-tabs" id="view-tabs"></div>
@@ -1023,13 +1124,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
 
       <div class="medina-only">
-        <h2 style="margin-top:0;">10 sites<span class="info-icon" title="Positions are estimated from the real ministry distance table (not GPS-surveyed). Capacity figures are illustrative placeholders; none exist yet from the ministry.">i</span></h2>
-        <div class="cluster-legend">
-          <span><span class="num-badge" style="background:#0ca3a3;width:10px;height:10px;"></span>Central cluster</span>
-          <span><span class="num-badge" style="background:#eda100;width:10px;height:10px;"></span>Uhud pair</span>
-          <span><span class="num-badge" style="background:#d03b3b;width:10px;height:10px;"></span>Outlier</span>
-        </div>
-        <div id="medina-site-list"></div>
+        <h2 style="margin-top:0;">10 heritage sites</h2>
+        <div class="medina-avg-banner" id="medina-avg-cap-note">Avg capacity ~<span id="medina-avg-cap-val">-</span> groups/slot</div>
+        <div class="legend-notes" style="margin-top:8px;">Tap a site to see live load and book it. Positions are approximate, not GPS-surveyed.</div>
+
+        <div id="medina-site-cards" class="msite-cards" style="margin-top:10px;"></div>
+
+        <div class="op-banner" style="margin-top:10px;">🚌 Built for tour operators. Groups arrive 40+ at a time, not solo pilgrims.</div>
       </div>
 
     </aside>
@@ -1054,6 +1155,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
             <span data-season="winter"><span class="en">Winter</span><span class="ja">冬</span></span>
           </div>
           <div class="timeline-caption" id="timeline-caption"></div>
+        </div>
+        <div class="medina-toasts medina-only" id="medina-toasts"></div>
+        <div class="timeline-bar medina-only">
+          <div class="timeline-top">
+            <button class="play-btn aqua" id="medina-play-btn" title="Play / pause the simulated visiting day">&#9654;</button>
+            <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="0" step="1" />
+            <div class="speed-btns" id="medina-speed-btns">
+              <button class="speed-btn active" data-speed="0.4">0.4×</button>
+              <button class="speed-btn" data-speed="1">1×</button>
+              <button class="speed-btn" data-speed="2">2×</button>
+            </div>
+            <button class="speed-btn" id="medina-reset-btn" title="Reset to 7:00 AM">&#8634; Reset</button>
+          </div>
+          <div class="timeline-caption" id="medina-timeline-caption">7:00 AM · simulated visiting day (7:00 AM to 6:00 PM)</div>
+          <button type="button" class="mform-submit" id="medina-demo-btn" style="width:100%;margin-top:8px;background:var(--aqua);">🎬 Generate demo traffic (no booking needed, plays automatically)</button>
         </div>
       </div>
 
@@ -1157,29 +1273,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
       <div class="medina-only">
         <div class="medina-view" id="medina-view-msites">
-          <h2 style="margin-top:0;">Site details</h2>
-          <div id="medina-site-detail"><div class="site-detail-empty">Tap a numbered pin on the map, or a site in the list, to see it here.</div></div>
-          <h2>Routes<span class="info-icon" title="Straight-line km from the ministry's distance table. Drive time upgrades live via OSRM (same mechanism as the Fukui routes) once it resolves.">i</span></h2>
-          <div id="medina-route-rows"></div>
+          <div id="medina-detail"></div>
+          <h2>Suggested itineraries</h2>
+          <div class="card-sub" style="margin:-2px 0 8px 0;">Two clusters plus one outlier, not ten separate stops. Pick a starting point and a site in Book (operator) to see the actual suggested order and travel time.</div>
+          <details style="margin-top:8px;">
+            <summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:var(--ink-2);">What we'd measure first</summary>
+            <div class="card-sub" style="line-height:1.5;margin-top:6px;">Flow, dwell time, congestion and seasonality across all ten sites, before committing to a reservation system. If inbound flow is already low, rationing may be premature.</div>
+          </details>
         </div>
 
         <div class="medina-view" id="medina-view-mbook">
-          <h2 style="margin-top:0;">Book a visit<span class="info-icon" title="Built for operators, not individual pilgrims: visitors arrive in tour groups of 40+, per the ministry brief. Demo only, nothing leaves this browser tab.">i</span></h2>
+          <h2 style="margin-top:0;">Book a group visit</h2>
+          <div class="op-banner">🚌 For tour operators and group leaders. Groups arrive 40+ at a time, not solo pilgrims.</div>
+          <div id="medina-book-site-summary"></div>
           <form class="mform" id="medina-booking-form">
-            <div class="mform-row">
-              <label>Site or itinerary</label>
-              <div class="chip-select" id="mb-site-chips"></div>
-              <input type="hidden" id="mb-site" required />
-            </div>
-            <div class="mform-row">
-              <label>Time slot</label>
-              <div class="slot-grid" id="mb-slot-grid"></div>
-              <input type="hidden" id="mb-slot" required />
-            </div>
-            <div class="mform-row">
-              <label>Visit date</label>
-              <input type="date" id="mb-date" required />
-            </div>
             <div class="mform-row">
               <label>Operator / company name</label>
               <input type="text" id="mb-operator" placeholder="e.g. Al-Noor Tours" required />
@@ -1189,31 +1296,58 @@ svg.leaflet-image-layer.leaflet-interactive path {
               <div><label>Coaches</label><input type="number" id="mb-coaches" min="1" value="1" required /></div>
             </div>
             <div class="mform-row">
+              <label>Starting point</label>
+              <select id="mb-origin"></select>
+            </div>
+            <div class="mform-row">
+              <label>Site or itinerary</label>
+              <select id="mb-site"></select>
+            </div>
+            <div id="medina-route-preview"></div>
+            <div class="mform-row">
+              <label>Visit date</label>
+              <input type="date" id="mb-date" required />
+            </div>
+            <div class="mform-row">
+              <label>Time slot <span style="font-weight:400;color:var(--ink-muted);">(remaining capacity shown)</span></label>
+              <div class="slot-grid" id="mb-slot-grid"></div>
+              <input type="hidden" id="mb-slot" required />
+            </div>
+            <div class="mform-row">
               <label><input type="checkbox" id="mb-guide" style="width:auto;padding:0;margin-right:6px;vertical-align:middle;" />Request a guide</label>
             </div>
+            <div class="hint">Slots are illustrative placeholders (hourly, 7am–6pm). No confirmed operating-hours data exists yet.</div>
             <button type="submit" class="mform-submit">Request reservation</button>
           </form>
           <div id="medina-confirmation"></div>
           <h2>This session's bookings</h2>
-          <div id="medina-my-bookings" class="card-sub">None yet.</div>
+          <div id="medina-my-bookings" class="card-sub">No bookings yet.</div>
         </div>
 
         <div class="medina-view" id="medina-view-moperator">
           <h2 style="margin-top:0;">Operator console</h2>
-          <div style="overflow-x:auto;">
-            <table class="op-table">
-              <thead><tr><th>#</th><th>Site</th><th>Avg. capacity</th><th>Booked</th><th>Load</th></tr></thead>
-              <tbody id="medina-capacity-table"></tbody>
-            </table>
-          </div>
-          <h2>Reservations</h2>
+          <div class="card-sub" style="margin:-2px 0 8px 0;">Every reservation logged this session, plus live capacity load per site.</div>
+          <div class="stat-grid" id="medina-avg-stats" style="margin-bottom:10px;"></div>
+          <div id="medina-capacity-cards"></div>
+          <h2>All reservations</h2>
           <div style="overflow-x:auto;">
             <table class="booking-table">
-              <thead><tr><th>Code</th><th>Operator</th><th>Site / route</th><th>Date</th><th>Slot</th><th>Grp</th><th>Coach</th><th>Guide</th></tr></thead>
-              <tbody id="medina-bookings-body"><tr><td colspan="8" style="color:var(--ink-muted);">None yet.</td></tr></tbody>
+              <thead><tr><th>#</th><th>Code</th><th>Operator</th><th>Site</th><th>Date</th><th>Slot</th><th>Grp</th><th>Coach</th><th>Guide</th><th>Status</th><th></th></tr></thead>
+              <tbody id="medina-bookings-body"><tr><td colspan="11" style="color:var(--ink-muted);">No reservations yet.</td></tr></tbody>
             </table>
           </div>
           <button type="button" class="scenario-btn" id="medina-clear-bookings" style="margin-top:8px;">Clear demo reservations</button>
+        </div>
+
+        <div class="medina-view" id="medina-view-mconditions">
+          <h2 style="margin-top:0;">Weather</h2>
+          <div class="card-sub" style="margin:-2px 0 8px 0;">Simulated forecast for this demo. Trigger a condition to see its effect on bookings live.</div>
+          <div class="scenario-btns" id="medina-weather-btns"></div>
+          <div id="medina-weather-status" style="margin-top:8px;"></div>
+
+          <h2>Visitor satisfaction</h2>
+          <div class="card-sub" style="margin:-2px 0 8px 0;">Illustrative per-site score. Falls when a site is overcrowded or weather-affected.</div>
+          <div id="medina-satisfaction-rows"></div>
         </div>
       </div>
     </aside>
@@ -1253,7 +1387,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   // ---------------- City switch: Fukui (default) or Madinah heritage sites ----------------
   // 'fukui' or 'medina'. Swaps map bounds/layers and panel content; see setCity().
-  var CITY = 'fukui';
+  var CITY = 'medina'; // this copy (served at /medina/) defaults to Madinah; setCity('medina') below also runs once at startup to apply every side effect of that (map layers, bounds, button/attribute state)
 
   // Madinah's 10 heritage sites (Ministry of Hajj brief, source PDF dated 3 Sep 2026:
   // "Madinah_Locations_English_Arabic_QR_WITH_DISTANCE_TABLE"). One site is still
@@ -1279,28 +1413,293 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // console and booking flow below have something to render against, not a claim
   // about real capacity.
   var MEDINA_SITES = [
-    { num:1,  id:'jabal-ayr',  nameEn:'Jabal Ayr', nameAr:'جبل عير', cluster:'outlier', lat:24.38522, lng:39.59444, capacityPerSlot:2 },
-    { num:2,  id:'uhud',       nameEn:'Summit of Mount Uhud', nameAr:'قمة جبل أحد', cluster:'B', lat:24.50372, lng:39.61283, capacityPerSlot:6 },
-    { num:3,  id:'shuhada',    nameEn:'Sayyid al-Shuhada Square', nameAr:'ميدان سيد الشهداء', cluster:'B', lat:24.48657, lng:39.60353, capacityPerSlot:6 },
-    { num:4,  id:'faqir-well', nameEn:'Al-Faqir Well (Salman Al-Farsi Well)', nameAr:'بئر الفقير (بئر سلمان الفارسي)', cluster:'A', lat:24.44557, lng:39.62444, capacityPerSlot:3 },
-    { num:5,  id:'gharas-well',nameEn:'Gharas Well', nameAr:'بئر غرس', cluster:'A', lat:24.44252, lng:39.62300, capacityPerSlot:3 },
-    { num:6,  id:'safiya',     nameEn:'Al-Safiya Museum and Garden', nameAr:'متحف وحديقة الصافية', cluster:'A', lat:24.45660, lng:39.60741, capacityPerSlot:5 },
-    { num:7,  id:'biography-museum', nameEn:"International Fair and Museum of the Prophet's Biography and Islamic Civilization", nameAr:'المعرض والمتحف الدولي للسيرة النبوية والحضارة الإسلامية', cluster:'A', lat:24.45955, lng:39.60728, capacityPerSlot:8 },
-    { num:8,  id:'qiblatain',  nameEn:'Masjid Al-Qiblatain', nameAr:'مسجد القبلتين', cluster:'Asat', lat:24.46937, lng:39.58080, capacityPerSlot:6 },
-    { num:9,  id:'quba',       nameEn:'Quba Mosque', nameAr:'مسجد قباء', cluster:'A', lat:24.44041, lng:39.61477, capacityPerSlot:8 },
-    { num:10, id:'al-hayy',    nameEn:'Al-Hayy Project', nameAr:'مشروع الحي', cluster:'A', lat:24.44918, lng:39.59521, capacityPerSlot:4 }
+    { num:1,  id:'jabal-ayr',  nameEn:'Jabal Ayr', nameAr:'جبل عير', cluster:'outlier', lat:24.38522, lng:39.59444, capacityPerSlot:2,
+      icon:'⛰️', desc:'A mountain south of the city, linked in early accounts to the Battle of Uhud. 8 to 17 km from every other site, so it runs as its own itinerary rather than a stop on a cluster loop.' },
+    { num:2,  id:'uhud',       nameEn:'Summit of Mount Uhud', nameAr:'قمة جبل أحد', cluster:'B', lat:24.50372, lng:39.61283, capacityPerSlot:6,
+      icon:'🏔️', desc:'The summit overlooking the Battle of Uhud site, paired with Sayyid al-Shuhada Square 2.76 km away.' },
+    { num:3,  id:'shuhada',    nameEn:'Sayyid al-Shuhada Square', nameAr:'ميدان سيد الشهداء', cluster:'B', lat:24.48657, lng:39.60353, capacityPerSlot:6,
+      icon:'📍', desc:'Memorial square for the martyrs of Uhud, next to the Uhud cemetery.' },
+    { num:4,  id:'faqir-well', nameEn:'Al-Faqir Well (Salman Al-Farsi Well)', nameAr:'بئر الفقير (بئر سلمان الفارسي)', cluster:'A', lat:24.44557, lng:39.62444, capacityPerSlot:3,
+      icon:'💧', desc:'A historic well associated with Salman Al-Farsi, part of the central cluster of wells near Quba, 480 m from Gharas Well.' },
+    { num:5,  id:'gharas-well',nameEn:'Gharas Well', nameAr:'بئر غرس', cluster:'A', lat:24.44252, lng:39.62300, capacityPerSlot:3,
+      icon:'💧', desc:'One of the historic wells of the early Islamic era, near Quba Mosque.' },
+    { num:6,  id:'safiya',     nameEn:'Al-Safiya Museum and Garden', nameAr:'متحف وحديقة الصافية', cluster:'A', lat:24.45660, lng:39.60741, capacityPerSlot:5,
+      icon:'🏛️', desc:'A heritage museum and garden in the Quba district, 430 m from the Prophet’s Biography Museum.' },
+    { num:7,  id:'biography-museum', nameEn:"International Fair and Museum of the Prophet's Biography and Islamic Civilization", nameAr:'المعرض والمتحف الدولي للسيرة النبوية والحضارة الإسلامية', cluster:'A', lat:24.45955, lng:39.60728, capacityPerSlot:8,
+      icon:'🏛️', desc:'A large indoor exhibition on the Prophet’s biography and Islamic civilization; the highest illustrative capacity of the ten sites.' },
+    { num:8,  id:'qiblatain',  nameEn:'Masjid Al-Qiblatain', nameAr:'مسجد القبلتين', cluster:'Asat', lat:24.46937, lng:39.58080, capacityPerSlot:6,
+      icon:'🕌', desc:'The Mosque of the Two Qiblas, where the direction of prayer changed from Jerusalem to Makkah. A satellite of Cluster A, 3.48 km from its nearest neighbor.' },
+    { num:9,  id:'quba',       nameEn:'Quba Mosque', nameAr:'مسجد قباء', cluster:'A', lat:24.44041, lng:39.61477, capacityPerSlot:8,
+      icon:'🕌', desc:'The first mosque built in Islam, and the busiest anchor of the central cluster.' },
+    { num:10, id:'al-hayy',    nameEn:'Al-Hayy Project', nameAr:'مشروع الحي', cluster:'A', lat:24.44918, lng:39.59521, capacityPerSlot:4,
+      icon:'🏗️', desc:'A neighborhood heritage redevelopment project near the central cluster.' }
   ];
-  var MEDINA_SITE_BY_ID = {};
+  var MEDINA_SITE_BY_ID = {}; MEDINA_SITES.forEach(function(s){ MEDINA_SITE_BY_ID[s.id]=s; });
+  // Real, verified Wikimedia Commons photos (checked against each file's own Commons
+  // page). Three of the ten sites have no dedicated photo on Commons under any name
+  // variant (jabal-ayr, safiya, al-hayy) -- rather than guess or substitute a
+  // mismatched image, those fall back to the illustrated placeholder in the UI.
+  var MEDINA_PHOTO = {
+    'uhud': { url:'https://upload.wikimedia.org/wikipedia/commons/7/74/Mount_Uhud.JPG', credit:'Adiput, public domain, via Wikimedia Commons' },
+    'shuhada': { url:'https://upload.wikimedia.org/wikipedia/commons/e/ef/%D9%85%D9%82%D8%A8%D8%B1%D8%A9_%D8%B4%D9%87%D8%AF%D8%A7%D8%A1_%D8%A3%D8%AD%D8%AF.jpg', credit:'M sh, CC BY-SA 4.0, via Wikimedia Commons' },
+    'faqir-well': { url:'https://upload.wikimedia.org/wikipedia/commons/9/9e/Madina_trip_84.jpg', credit:'Ashashyou, CC BY-SA 4.0, via Wikimedia Commons' },
+    'gharas-well': { url:'https://upload.wikimedia.org/wikipedia/commons/1/16/%D8%A8%D8%A6%D8%B1_%D8%BA%D8%B1%D8%B3.jpg', credit:'Ayman ZouLghina, CC BY-SA 4.0, via Wikimedia Commons' },
+    'biography-museum': { url:'https://upload.wikimedia.org/wikipedia/commons/4/4a/Prophet%27s_Biography_Exhibition_and_Museum_Headquarters%2C_ICESCO_%282023%29.jpg', credit:'Saudi Press Agency, CC BY-SA 4.0, via Wikimedia Commons' },
+    'qiblatain': { url:'https://upload.wikimedia.org/wikipedia/commons/b/bc/Masjid_al-Qiblatain.jpg', credit:'Aiman titi, CC BY-SA 3.0, via Wikimedia Commons' },
+    'quba': { url:'https://upload.wikimedia.org/wikipedia/commons/0/00/Quba_Mosque.jpg', credit:'Tubi719, CC BY-SA 4.0, via Wikimedia Commons' }
+  };
+  MEDINA_SITES.forEach(function(s){ s.photo = MEDINA_PHOTO[s.id] || null; });
+
+  // Illustrative weather exposure (0-1, higher = more affected by rain/storm) and a
+  // baseline visitor-satisfaction score (0-100) per site -- both placeholders, no
+  // ministry survey or weather-sensitivity data exists yet, same caveat as capacity.
+  var MEDINA_EXPOSURE = { 'jabal-ayr':0.95, 'uhud':0.85, 'shuhada':0.6, 'faqir-well':0.5, 'gharas-well':0.5,
+    'safiya':0.25, 'biography-museum':0.1, 'qiblatain':0.3, 'quba':0.35, 'al-hayy':0.4 };
+  var MEDINA_SATISFACTION_BASE = { 'jabal-ayr':78, 'uhud':88, 'shuhada':84, 'faqir-well':74, 'gharas-well':75,
+    'safiya':80, 'biography-museum':90, 'qiblatain':92, 'quba':94, 'al-hayy':72 };
   MEDINA_SITES.forEach(function(s){
-    // Average capacity in people, not just groups: the brief's own stated typical
-    // group size (40+) is the only concrete number in the source material, so it's
-    // used here rather than inventing a separate people-count placeholder.
-    s.capacityPeople = s.capacityPerSlot * 40;
-    MEDINA_SITE_BY_ID[s.id] = s;
+    s.exposure = MEDINA_EXPOSURE[s.id] != null ? MEDINA_EXPOSURE[s.id] : 0.4;
+    s.satisfactionBase = MEDINA_SATISFACTION_BASE[s.id] != null ? MEDINA_SATISFACTION_BASE[s.id] : 80;
   });
   var MEDINA_CLUSTER_COLOR = { A:'#0ca3a3', Asat:'#0ca3a3', B:'#eda100', outlier:'#d03b3b' };
-  var MEDINA_CLUSTER_LABEL = { A:'Cluster A', Asat:'Cluster A (satellite)', B:'Cluster B', outlier:'Outlier' };
+  var MEDINA_CLUSTER_CLASS = { A:'', Asat:'', B:'b-B', outlier:'b-outlier' };
   var MEDINA_BOUNDS = [[24.365,39.565],[24.520,39.640]];
+  var MEDINA_PAX_PER_GROUP = 40; // per the brief: visitors arrive in groups of 40+, not individually
+  var MEDINA_AVG_CAPACITY = MEDINA_SITES.reduce(function(sum,s){ return sum+s.capacityPerSlot; },0) / MEDINA_SITES.length;
+
+  // Typical time-on-site, in minutes -- illustrative estimates (no ministry duration
+  // data exists), used only to size the route/schedule preview and the day simulation.
+  var MEDINA_DURATION_MIN = { 'jabal-ayr':30, 'uhud':40, 'shuhada':25, 'faqir-well':15, 'gharas-well':15,
+    'safiya':35, 'biography-museum':50, 'qiblatain':30, 'quba':40, 'al-hayy':25 };
+  MEDINA_SITES.forEach(function(s){ s.durationMin = MEDINA_DURATION_MIN[s.id] || 30; });
+
+  // ---- Illustrative live-occupancy simulation (no real sensor feed exists for these
+  // sites yet). Driven by STATE.medinaT (0..1 across the simulated operating day) so
+  // it can be played, paused and scrubbed with the timeline control, the way the Fukui
+  // seasonal timeline works -- see medinaTick() near the bottom. ----
+  function medinaSiteLive(s, cyclePos){
+    var maxPax = s.capacityPerSlot * MEDINA_PAX_PER_GROUP;
+    var peak = 0.5 + 0.10*Math.sin(s.num*1.7);
+    var width = 0.20 + 0.05*Math.cos(s.num);
+    var wobble = 0.82 + 0.32*((Math.sin(cyclePos*9*Math.PI + s.num*2.1)+1)/2);
+    var bellAt = function(p){ var d=(p-peak)/width; return Math.exp(-d*d); };
+    var current = Math.round(maxPax * bellAt(cyclePos) * wobble);
+    var predicted = Math.round(maxPax * bellAt((cyclePos+0.06)%1) * wobble);
+    // Ambient baseline is capped at the site's own capacity -- it represents ordinary
+    // foot traffic sharing the site, not an unbounded number layered on top of it.
+    return { current:Math.max(0,Math.min(maxPax,current)), predicted:Math.max(0,Math.min(maxPax,predicted)), capacityPax:maxPax };
+  }
+
+  // ---- Weather (simulated, manually triggered like Fukui's forecast scenarios --
+  // demo control rather than a random feed, so it's repeatable in a live walkthrough).
+  // Storm puts any site with exposure >= 0.6 on hold for new reservations; rain is a
+  // lighter, non-blocking caution. Both dent the illustrative satisfaction score
+  // below, scaled by how exposed that particular site is. ----
+  var MEDINA_WEATHER_INFO = {
+    clear: { icon:'☀️', label:'Clear', desc:'No weather impact on any site.' },
+    rain:  { icon:'🌧️', label:'Rain', desc:'Light impact on exposed sites. Bookings stay open.' },
+    storm: { icon:'⛈️', label:'Storm advisory', desc:'Exposed sites on hold for new reservations until it clears.' }
+  };
+  function medinaSiteUnsafe(s){ return STATE.medinaWeather === 'storm' && s.exposure >= 0.6; }
+  function medinaValueUnsafe(value){
+    return medinaSitesForValue(value).some(function(id){ return medinaSiteUnsafe(MEDINA_SITE_BY_ID[id]); });
+  }
+  function medinaSiteSatisfaction(s, cyclePos, ratio){
+    var wobble = 4*Math.sin(cyclePos*6*Math.PI + s.num*1.3);
+    var crowdPenalty = ratio > 0.85 ? (ratio-0.85)*80 : 0;
+    var weatherPenalty = 0;
+    if (STATE.medinaWeather==='storm') weatherPenalty = s.exposure*30;
+    else if (STATE.medinaWeather==='rain') weatherPenalty = s.exposure*12;
+    return Math.max(30, Math.min(99, Math.round(s.satisfactionBase + wobble - crowdPenalty - weatherPenalty)));
+  }
+  function medinaSatTier(score){ if (score>=80) return ''; if (score>=60) return 'warm'; return 'hot'; }
+
+  // ---- Real 10x10 straight-line distance matrix, km, from the ministry's own PDF
+  // (site numbers match MEDINA_SITES[].num). Index 0 is unused so the matrix can be
+  // addressed directly by site number (1-10), matching the PDF's own numbering. ----
+  var MEDINA_DIST_KM = [
+    null,
+    [null,0,17.29,14.69,9.57,9.09,10.45,10.87,12.29,8.41,9.24],
+    [null,17.29,0,2.76,8.54,8.94,6.84,6.42,6.51,9.15,8.21],
+    [null,14.69,2.76,0,6.53,6.86,4.36,3.93,3.89,6.83,5.51],
+    [null,9.57,8.54,6.53,0,0.48,2.75,3.03,6.69,1.47,3.88],
+    [null,9.09,8.94,6.86,0.48,0,2.89,3.21,6.77,1.12,3.78],
+    [null,10.45,6.84,4.36,2.75,2.89,0,0.43,3.96,2.53,1.92],
+    [null,10.87,6.42,3.93,3.03,3.21,0.43,0,3.76,2.93,2.18],
+    [null,12.29,6.51,3.89,6.69,6.77,3.96,3.76,0,6.12,3.48],
+    [null,8.41,9.15,6.83,1.47,1.12,2.53,2.93,6.12,0,2.86],
+    [null,9.24,8.21,5.51,3.88,3.78,1.92,2.18,3.48,2.86,0]
+  ];
+  function medinaDistKm(numA, numB){ return MEDINA_DIST_KM[numA][numB]; }
+  function medinaHaversineKm(lat1, lng1, lat2, lng2){
+    var R = 6371, toRad = Math.PI/180;
+    var dLat = (lat2-lat1)*toRad, dLng = (lng2-lng1)*toRad;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*toRad)*Math.cos(lat2*toRad)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // ---- Where tour operators actually start from. The airport coordinate is real
+  // (Prince Mohammad Bin Abdulaziz International Airport, Madinah); the hotel-district
+  // points are illustrative representative zones -- no ministry data on hotel
+  // locations exists, same caveat as capacity. ----
+  var MEDINA_ORIGINS = [
+    { id:'haram',    label:'Al-Haram hotel district (Masjid an-Nabawi)', icon:'🕌', lat:24.4672, lng:39.6112 },
+    { id:'quba-hotels', label:'Quba district hotels', icon:'🏨', lat:24.4430, lng:39.6165 },
+    { id:'airport-rd', label:'Airport Road hotel district', icon:'🏨', lat:24.4970, lng:39.6540 },
+    { id:'airport',  label:'Prince Mohammad Bin Abdulaziz Airport (MED)', icon:'✈️', lat:24.5536, lng:39.7051 }
+  ];
+  var MEDINA_ORIGIN_BY_ID = {}; MEDINA_ORIGINS.forEach(function(o){ MEDINA_ORIGIN_BY_ID[o.id]=o; });
+
+  // ---- Smart routing: nearest-neighbor sequencing from the chosen starting point,
+  // preferring the ministry's real site-to-site distances and falling back to
+  // haversine only for the origin's first leg (origins aren't in that matrix).
+  // Answers brief objective 2 -- "most efficient visiting sequence, based on
+  // location, travel time [and] visit duration" -- capacity is factored separately
+  // by medinaPlanBooking() below, which decides which sites/slots are even offered. ----
+  var MEDINA_SPEED_KMH = 28; // assumed coach speed incl. stops, city driving
+  function medinaBuildRoute(originId, siteIds){
+    var origin = MEDINA_ORIGIN_BY_ID[originId];
+    var remaining = siteIds.slice();
+    var order = [], legKms = [];
+    var curLat = origin.lat, curLng = origin.lng, curNum = null;
+    while (remaining.length){
+      var bestIdx = -1, bestKm = Infinity;
+      remaining.forEach(function(id, i){
+        var s = MEDINA_SITE_BY_ID[id];
+        var d = (curNum != null) ? medinaDistKm(curNum, s.num) : medinaHaversineKm(curLat, curLng, s.lat, s.lng);
+        if (d < bestKm){ bestKm = d; bestIdx = i; }
+      });
+      var chosenId = remaining.splice(bestIdx, 1)[0];
+      var cs = MEDINA_SITE_BY_ID[chosenId];
+      order.push(chosenId); legKms.push(bestKm);
+      curLat = cs.lat; curLng = cs.lng; curNum = cs.num;
+    }
+    return { order:order, legKms:legKms, totalKm: legKms.reduce(function(a,b){ return a+b; }, 0) };
+  }
+  function medinaSitesForValue(value){
+    if (value==='route:A') return MEDINA_SITES.filter(function(s){ return s.cluster==='A'||s.cluster==='Asat'; }).map(function(s){ return s.id; });
+    if (value==='route:B') return MEDINA_SITES.filter(function(s){ return s.cluster==='B'; }).map(function(s){ return s.id; });
+    if (value==='route:ALL') return MEDINA_SITES.map(function(s){ return s.id; });
+    return [value.replace('site:','')];
+  }
+  function medinaTimeToMin(hhmm){ var p = hhmm.split(':'); return parseInt(p[0],10)*60 + parseInt(p[1],10); }
+  function medinaMinToClock(min){
+    min = Math.round(min);
+    var h24 = Math.floor((min/60))%24, m = ((min%60)+60)%60;
+    var ampm = h24>=12 ? 'PM' : 'AM', h12 = h24%12; if (h12===0) h12=12;
+    return h12+':'+(m<10?'0':'')+m+' '+ampm;
+  }
+  // Gentle quadratic-bezier curve between two points, used as the immediately
+  // available "smooth road-like" path for a travel leg. Upgraded in the background to
+  // real road geometry via OSRM (medinaUpgradeLegRoad below) when that succeeds; this
+  // curve is what renders meanwhile, and what stays if the network call fails.
+  function medinaBezierPath(from, to, n){
+    var mx=(from[0]+to[0])/2, my=(from[1]+to[1])/2;
+    var dx=to[0]-from[0], dy=to[1]-from[1];
+    var len = Math.sqrt(dx*dx+dy*dy) || 0.0001;
+    var nx=-dy/len, ny=dx/len;
+    var bend = len*0.16;
+    var cx=mx+nx*bend, cy=my+ny*bend;
+    var pts=[];
+    for (var i=0;i<=n;i++){
+      var t=i/n;
+      pts.push([ (1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0], (1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1] ]);
+    }
+    return pts;
+  }
+  // Position at fraction f (0..1) along a polyline, by cumulative distance rather
+  // than by vertex index -- keeps motion speed visually constant along a road path
+  // whose segments aren't evenly spaced.
+  function medinaPointAtPathFraction(path, f){
+    if (path.length===1) return path[0];
+    var segs=[], total=0;
+    for (var i=1;i<path.length;i++){
+      var d = medinaHaversineKm(path[i-1][0],path[i-1][1],path[i][0],path[i][1]);
+      segs.push(d); total += d;
+    }
+    if (total<=0) return path[0];
+    var target = Math.max(0,Math.min(1,f))*total, acc=0;
+    for (var j=0;j<segs.length;j++){
+      if (acc+segs[j] >= target){
+        var segF = segs[j]<=0 ? 0 : (target-acc)/segs[j];
+        var a=path[j], b=path[j+1];
+        return [ a[0]+(b[0]-a[0])*segF, a[1]+(b[1]-a[1])*segF ];
+      }
+      acc += segs[j];
+    }
+    return path[path.length-1];
+  }
+
+  // Builds a leg-by-leg travel+dwell+return schedule so the coach arrives at the
+  // FIRST site exactly at the booked slot time (working backward to find the origin
+  // departure time), then a dwell per site, then a final return leg back to the
+  // starting point once the last site's visit ends.
+  // Draws each travel leg as a thin colored line on the map -- color follows the
+  // destination site's cluster (same palette as the badges), so you can see at a
+  // glance which area a coach is headed to; the return leg is a neutral dashed line.
+  // Starts invisible (opacity 0): updateMedinaLive fades it in only while that
+  // booking is actually active, so the map doesn't fill up with idle future/past
+  // routes when many bookings exist at once.
+  function medinaDrawLegLine(leg, color){
+    leg.layer = L.polyline(leg.path, { color:color, weight:3, opacity:0, dashArray: leg.isReturn ? '5,6' : null, interactive:false }).addTo(medinaBusRouteLayer);
+  }
+  function medinaBuildSchedule(originId, order, legKms, arriveFirstMin){
+    var origin = MEDINA_ORIGIN_BY_ID[originId];
+    var travelMins = legKms.map(function(km){ return (km / MEDINA_SPEED_KMH) * 60; });
+    var legs = [];
+    var t = arriveFirstMin - travelMins[0];
+    var departMin = t;
+    var fromLatLng = [origin.lat, origin.lng];
+    order.forEach(function(id, i){
+      var s = MEDINA_SITE_BY_ID[id];
+      var to = [s.lat, s.lng];
+      var travelMin = travelMins[i];
+      var travelLeg = { type:'travel', from:fromLatLng, to:to, startMin:t, endMin:t+travelMin, path:medinaBezierPath(fromLatLng, to, 14) };
+      medinaDrawLegLine(travelLeg, MEDINA_CLUSTER_COLOR[s.cluster]);
+      legs.push(travelLeg);
+      t += travelMin;
+      legs.push({ type:'dwell', siteId:id, latlng:to, startMin:t, endMin:t+s.durationMin });
+      t += s.durationMin;
+      fromLatLng = to;
+    });
+    var returnKm = medinaHaversineKm(fromLatLng[0], fromLatLng[1], origin.lat, origin.lng);
+    var returnMin = (returnKm / MEDINA_SPEED_KMH) * 60;
+    var returnFrom = fromLatLng, returnTo = [origin.lat, origin.lng];
+    var returnLeg = { type:'travel', from:returnFrom, to:returnTo, startMin:t, endMin:t+returnMin, path:medinaBezierPath(returnFrom, returnTo, 14), isReturn:true };
+    medinaDrawLegLine(returnLeg, '#8a8a86');
+    legs.push(returnLeg);
+    t += returnMin;
+    var schedule = { legs:legs, startMin:departMin, endMin:t };
+    schedule.legs.forEach(function(leg){ if (leg.type==='travel') medinaUpgradeLegRoad(leg); });
+    return schedule;
+  }
+
+  // Upgrades a travel leg's bezier-curve placeholder to real road geometry via OSRM,
+  // same mechanism as the Fukui/static Medina routes (fetchRealRoad, reused as-is).
+  // Cached by rounded coordinates so the many bookings that share a common leg (e.g.
+  // several coaches all going Haram -> Quba) only fetch it once. Silently keeps the
+  // curve if the network call fails or is unavailable -- never leaves a broken path.
+  var medinaRoadCache = {};
+  function medinaRoadCacheKey(from, to){
+    return from[0].toFixed(4)+','+from[1].toFixed(4)+'|'+to[0].toFixed(4)+','+to[1].toFixed(4);
+  }
+  function medinaUpgradeLegRoad(leg){
+    var key = medinaRoadCacheKey(leg.from, leg.to);
+    var cached = medinaRoadCache[key];
+    if (cached && cached.path){
+      leg.path = cached.path;
+      if (leg.layer) leg.layer.setLatLngs(cached.path);
+      return;
+    }
+    if (!cached){
+      cached = medinaRoadCache[key] = { promise:null, path:null };
+      cached.promise = fetchRealRoad({ from:leg.from, to:leg.to }).then(function(path){
+        if (path && path.length>1) cached.path = path;
+        return cached.path;
+      });
+    }
+    cached.promise.then(function(path){ if (path){ leg.path = path; if (leg.layer) leg.layer.setLatLngs(path); } });
+  }
 
   // Real pair-to-pair straight-line distances in km, by site id (from the ministry's
   // own distance table -- the only real routing input we have; the PDF flags these
@@ -1825,14 +2224,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // city's markers/routes are ever visible at once.
   var medinaMarkerLayer = L.layerGroup();
   var medinaRouteLayer = L.layerGroup();
-  var medinaGlowMarkers = {}, medinaGhostMarkers = {}, medinaPins = {};
-  var MEDINA_STATE = { hoverId:null, selectedId:null };
+  var medinaBusRouteLayer = L.layerGroup(); // one colored polyline per active booking leg
+  var medinaMarkers = {};
 
   function initMedinaRoutePaths(){
     MEDINA_ROUTE_DEFS.forEach(function(r){
       MEDINA_ROUTE_PATHS[r.id] = densify(r.fallback, 8);
       var layer = L.polyline(MEDINA_ROUTE_PATHS[r.id], { color:MEDINA_CLUSTER_COLOR[MEDINA_SITE_BY_ID[r.fromId].cluster], weight:3, opacity:0.75, className:'flow-line' }).addTo(medinaRouteLayer);
-      layer.bindTooltip(r.fromName+' ↔ '+r.toName+': '+r.km.toFixed(2)+' km straight-line', {sticky:true});
+      layer.bindTooltip(r.fromName+' ↔ '+r.toName+' · '+r.km.toFixed(2)+' km (straight-line)', {sticky:true});
       MEDINA_ROUTE_LAYERS[r.id] = layer;
     });
     // Upgrade to real road geometry in the background, same OSRM path as Fukui.
@@ -1841,121 +2240,116 @@ svg.leaflet-image-layer.leaflet-interactive path {
         if (!path) return;
         MEDINA_ROUTE_PATHS[r.id] = path;
         if (MEDINA_ROUTE_LAYERS[r.id]) MEDINA_ROUTE_LAYERS[r.id].setLatLngs(path);
-        r.roadKm = 0;
-        for (var i=1;i<path.length;i++){
-          var a=path[i-1], b=path[i];
-          var dLat=(b[0]-a[0])*111.32, dLng=(b[1]-a[1])*111.32*Math.cos(a[0]*Math.PI/180);
-          r.roadKm += Math.sqrt(dLat*dLat+dLng*dLng);
-        }
-        renderMedinaRouteRows();
       }).catch(function(){});
     });
   }
 
-  // A site's "load" is however many logged demo bookings touch it -- counting a
-  // booking against every site its itinerary covers. Genuinely dynamic (it moves as
-  // reservations are added in this session), unlike a fabricated random number.
-  function medinaSiteIdsForBookingValue(value){
-    if (value === 'route:A') return MEDINA_SITES.filter(function(s){ return s.cluster==='A' || s.cluster==='Asat'; }).map(function(s){ return s.id; });
-    if (value === 'route:B') return MEDINA_SITES.filter(function(s){ return s.cluster==='B'; }).map(function(s){ return s.id; });
-    if (value === 'route:ALL') return MEDINA_SITES.map(function(s){ return s.id; });
-    var id = (value||'').replace('site:','');
-    return MEDINA_SITE_BY_ID[id] ? [id] : [];
+  var medinaGlowMarkers = {};
+  // currentOverride/busesNow let the live-occupancy loop pass in the combined
+  // (illustrative baseline + real booked groups) figure; omitted, it falls back to
+  // the baseline alone, e.g. for the very first popup content before any tick runs.
+  // Soonest booking scheduled to arrive (start dwelling) at this site after curMin --
+  // powers the popup's "Next arrival" line.
+  function medinaNextArrival(siteId, curMin){
+    var best = null;
+    MEDINA_BOOKINGS.forEach(function(b){
+      if (b.signedOff || !b.legs) return;
+      b.legs.forEach(function(leg){
+        if (leg.type==='dwell' && leg.siteId===siteId && leg.startMin > curMin){
+          if (!best || leg.startMin < best.startMin) best = { startMin:leg.startMin, operator:b.operator };
+        }
+      });
+    });
+    return best;
   }
-  function medinaBookedGroupsForSite(id){
-    return MEDINA_BOOKINGS.filter(function(b){ return medinaSiteIdsForBookingValue(b.siteVal).indexOf(id) >= 0; }).length;
+  function medinaPopupHtml(s, currentOverride, busesNow, satOverride){
+    var curMin = medinaCurrentMinute();
+    var live = medinaSiteLive(s, STATE.medinaT);
+    var current = currentOverride != null ? currentOverride : live.current;
+    var sat = satOverride != null ? satOverride : medinaSiteSatisfaction(s, STATE.medinaT, current/live.capacityPax);
+    var busLine = busesNow ? ('<br/><span style="font-size:13px;">🚌 '+busesNow+' coach'+(busesNow>1?'es':'')+' on site now</span>') : '';
+    var next = medinaNextArrival(s.id, curMin);
+    var nextLine = next ? ('<br/><span style="font-size:12.5px;color:#0a2a2f;">Next arrival: '+next.operator+' at '+medinaMinToClock(next.startMin)+'</span>') : '';
+    var weatherLine = medinaSiteUnsafe(s) ? '<br/><span style="font-size:12.5px;color:#a03;">⛈️ Storm advisory: on hold for new reservations</span>' : '';
+    return '<b style="font-size:14.5px;">'+s.num+'. '+s.nameEn+'</b><br/><span dir="rtl" style="unicode-bidi:isolate;font-size:13px;">'+s.nameAr+'</span>'+
+      '<br/><span style="font-size:13px;">Now ~'+current+' visitors · next hour ~'+live.predicted+'</span>'+
+      '<br/><span style="font-size:13px;">😊 Satisfaction ~'+sat+'%</span>'+busLine+nextLine+weatherLine+
+      '<br/><span style="font-size:11px;color:#888;">Illustrative capacity ~'+s.capacityPerSlot+' groups/slot (~'+live.capacityPax+' pax)</span>';
   }
-  function medinaLoadColor(pct){ return pct>=90 ? '#d03b3b' : (pct>=60 ? '#c98500' : '#0ca30c'); }
-  function medinaRadius(v){ return 9 + Math.min(v,10)*2.2; }
-
-  function medinaPopupHtml(s){
-    var booked = medinaBookedGroupsForSite(s.id);
-    var pct = Math.min(100, Math.round((booked/Math.max(1,s.capacityPerSlot))*100));
-    return '<b>'+s.num+'. '+s.nameEn+'</b><br/><span dir="rtl" style="unicode-bidi:isolate;">'+s.nameAr+'</span>'+
-      '<div style="margin-top:6px;font-size:11.5px;line-height:1.6;">'+
-      MEDINA_CLUSTER_LABEL[s.cluster]+'<br/>'+
-      'Avg. capacity: <b>'+s.capacityPerSlot+' groups/slot</b> (~'+s.capacityPeople+' pax at 40/group)<br/>'+
-      'Booked this demo: <b style="color:'+medinaLoadColor(pct)+'">'+booked+' / '+s.capacityPerSlot+' groups ('+pct+'%)</b>'+
-      '</div>';
-  }
-
   function initMedinaMarkers(){
     MEDINA_SITES.forEach(function(s){
-      var glow = L.circleMarker([s.lat,s.lng], { radius:medinaRadius(0), stroke:false, fillColor:MEDINA_CLUSTER_COLOR[s.cluster], fillOpacity:0.25, interactive:false }).addTo(medinaMarkerLayer);
-      var ghost = L.circleMarker([s.lat,s.lng], { radius:medinaRadius(s.capacityPerSlot), color:MEDINA_CLUSTER_COLOR[s.cluster], weight:2, dashArray:'2,5', fillOpacity:0, opacity:0.55, interactive:false }).addTo(medinaMarkerLayer);
-      var pin = L.marker([s.lat,s.lng], {
-        icon: L.divIcon({ className:'', html:'<div class="medina-pin" style="background:'+MEDINA_CLUSTER_COLOR[s.cluster]+'">'+s.num+'</div>', iconSize:[24,24], iconAnchor:[12,12] })
+      var glow = L.circleMarker([s.lat, s.lng], {
+        radius:30, stroke:false, fillColor:MEDINA_CLUSTER_COLOR[s.cluster], fillOpacity:0.22, interactive:false
       }).addTo(medinaMarkerLayer);
-      pin.bindTooltip(s.num+'. '+s.nameEn, {sticky:true});
-      pin.bindPopup('');
-      pin.on('click', function(){ selectMedinaSite(s.id); });
-      pin.on('mouseover', function(){ setMedinaHover(s.id); });
-      pin.on('mouseout', function(){ clearMedinaHover(s.id); });
-      medinaGlowMarkers[s.id] = glow; medinaGhostMarkers[s.id] = ghost; medinaPins[s.id] = pin;
-    });
-    updateMedinaMarkers();
-  }
-
-  // Called on init and after every booking change, so the map's fill radius and
-  // color genuinely reflect the demo's own booking state, the same way Fukui's
-  // markers redraw every tick from actual/predicted numbers.
-  function updateMedinaMarkers(){
-    MEDINA_SITES.forEach(function(s){
-      var booked = medinaBookedGroupsForSite(s.id);
-      var pct = Math.min(100, Math.round((booked/Math.max(1,s.capacityPerSlot))*100));
-      medinaGlowMarkers[s.id].setRadius(medinaRadius(booked));
-      medinaGlowMarkers[s.id].setStyle({ fillColor: medinaLoadColor(pct) });
-      medinaPins[s.id].setPopupContent(medinaPopupHtml(s));
+      var badge = L.marker([s.lat, s.lng], {
+        icon: L.divIcon({
+          className:'medina-num-icon',
+          html:'<div class="msite-badge map-badge '+(MEDINA_CLUSTER_CLASS[s.cluster]||'')+'" style="box-shadow:0 1px 4px rgba(0,0,0,.45);">'+s.num+'</div>',
+          iconSize:[46,46], iconAnchor:[23,23]
+        })
+      }).addTo(medinaMarkerLayer);
+      badge.bindTooltip(s.num+'. '+s.nameEn, {sticky:true});
+      badge.bindPopup(medinaPopupHtml(s));
+      badge.on('click', function(){ medinaSelectSite(s.id); });
+      badge.on('mouseover', function(){ medinaSetHover(s.id); });
+      badge.on('mouseout', function(){ medinaClearHover(s.id); });
+      medinaGlowMarkers[s.id] = glow;
+      medinaMarkers[s.id] = badge;
     });
   }
 
-  function medinaRefreshFocus(){
+  // Visible starting points on the map (airport, Haram hotel district, other hotel
+  // zones) so operators can see where buses actually depart from, not just pick a
+  // name from a dropdown.
+  function initMedinaOriginMarkers(){
+    MEDINA_ORIGINS.forEach(function(o){
+      var marker = L.marker([o.lat, o.lng], {
+        icon: L.divIcon({ className:'medina-origin-icon', html:'<div class="morigin-badge">'+o.icon+'</div>', iconSize:[42,42], iconAnchor:[21,21] })
+      }).addTo(medinaMarkerLayer);
+      marker.bindTooltip('Starting point: '+o.label, {permanent:true, direction:'right', offset:[8,0], className:'node-label'});
+      marker.bindPopup('<b>'+o.icon+' '+o.label+'</b><br/><span style="font-size:11px;color:#666;">Assumed starting point for tour-operator coaches.</span>');
+    });
+  }
+
+  // ---------------- Medina hover/select sync: map badges <-> left-panel cards <-> detail panel ----------------
+  function medinaRefreshCardHighlight(){
     Array.prototype.forEach.call(document.querySelectorAll('[data-medina-id]'), function(el){
       var id = el.getAttribute('data-medina-id');
-      el.classList.toggle('selected', id === MEDINA_STATE.selectedId || id === MEDINA_STATE.hoverId);
-    });
-    Object.keys(medinaPins).forEach(function(id){
-      var el = medinaPins[id].getElement();
-      var inner = el && el.querySelector('.medina-pin');
-      if (inner) inner.classList.toggle('is-focus', id === MEDINA_STATE.selectedId || id === MEDINA_STATE.hoverId);
+      el.classList.toggle('selected', id === STATE.medinaSelectedId || id === STATE.medinaHoverId);
     });
   }
-  function setMedinaHover(id){
-    if (MEDINA_STATE.hoverId === id) return;
-    MEDINA_STATE.hoverId = id;
-    medinaRefreshFocus();
+  function medinaSetHover(id){
+    if (STATE.medinaHoverId === id) return;
+    STATE.medinaHoverId = id;
+    if (id && medinaMarkers[id]){ medinaMarkers[id].openPopup(); }
+    medinaRefreshCardHighlight();
   }
-  function clearMedinaHover(id){
-    if (MEDINA_STATE.hoverId !== id) return;
-    MEDINA_STATE.hoverId = null;
-    medinaRefreshFocus();
+  function medinaClearHover(id){
+    if (STATE.medinaHoverId !== id) return;
+    STATE.medinaHoverId = null;
+    if (STATE.medinaSelectedId !== id && medinaMarkers[id]) medinaMarkers[id].closePopup();
+    medinaRefreshCardHighlight();
   }
-  function selectMedinaSite(id){
-    if (MEDINA_STATE.selectedId === id){
-      MEDINA_STATE.selectedId = null;
-    } else {
-      MEDINA_STATE.selectedId = id;
-      var s = MEDINA_SITE_BY_ID[id];
-      map.panTo([s.lat, s.lng], { animate:true });
-      map.closePopup();
-      medinaPins[id].openPopup();
-    }
-    medinaRefreshFocus();
-    renderMedinaSiteDetail();
+  function medinaSelectSite(id){
+    STATE.medinaSelectedId = id;
+    var s = MEDINA_SITE_BY_ID[id];
+    if (s){ map.panTo([s.lat, s.lng], { animate:true }); medinaMarkers[id].openPopup(); }
+    medinaRefreshCardHighlight();
+    renderMedinaDetail();
+    medinaSyncBookingSite();
   }
-  function wireMedinaRowDelegation(el){
-    if (!el) return;
+  function wireMedinaCardDelegation(el){
     el.addEventListener('mouseover', function(e){
       var row = e.target.closest('[data-medina-id]');
-      if (row) setMedinaHover(row.getAttribute('data-medina-id'));
+      if (row) medinaSetHover(row.getAttribute('data-medina-id'));
     });
     el.addEventListener('mouseout', function(e){
       var row = e.target.closest('[data-medina-id]');
-      if (row) clearMedinaHover(row.getAttribute('data-medina-id'));
+      if (row) medinaClearHover(row.getAttribute('data-medina-id'));
     });
     el.addEventListener('click', function(e){
       var row = e.target.closest('[data-medina-id]');
-      if (row) selectMedinaSite(row.getAttribute('data-medina-id'));
+      if (row) medinaSelectSite(row.getAttribute('data-medina-id'));
     });
   }
 
@@ -2200,72 +2594,123 @@ svg.leaflet-image-layer.leaflet-interactive path {
     });
   }
 
-  // ---------------- Madinah: numbered site directory, detail drawer, booking, operator console ----------------
+  // ---------------- Madinah: site directory, routes, booking, operator console ----------------
+  function medinaOccTier(ratio){
+    if (ratio >= 0.9) return 'hot';
+    if (ratio >= 0.6) return 'warm';
+    return '';
+  }
+  // Flat, numbered list -- no cluster/distance labels here (those stay internal to
+  // the routing and operator-console logic, which still use s.cluster for color
+  // coding and grouping; this list is just "the 10 sites," in order.
+  function medinaCardHtml(s){
+    return '<div class="msite-card" data-medina-id="'+s.id+'">'+
+      '<div class="msite-badge '+(MEDINA_CLUSTER_CLASS[s.cluster]||'')+'">'+s.num+'</div>'+
+      '<div class="msite-body">'+
+        '<span class="msite-en">'+s.icon+' '+s.nameEn+'</span>'+
+        '<span class="msite-ar">'+s.nameAr+'</span>'+
+        '<div class="msite-live"><div class="occ-track"><div class="occ-fill" id="mocc-'+s.id+'" style="width:0%;"></div></div>'+
+        '<span class="msite-pax" id="mpax-'+s.id+'">-</span></div>'+
+      '</div>'+
+    '</div>';
+  }
   function renderMedinaSiteList(){
-    var el = document.getElementById('medina-site-list');
+    var el = document.getElementById('medina-site-cards');
     if (!el) return;
-    el.innerHTML = MEDINA_SITES.map(function(s){
-      return '<div class="site-row" data-medina-id="'+s.id+'">'+
-        '<span class="num-badge" style="background:'+MEDINA_CLUSTER_COLOR[s.cluster]+'">'+s.num+'</span>'+
-        '<span class="site-names"><span class="site-en">'+s.nameEn+'</span><span class="site-ar">'+s.nameAr+'</span></span>'+
-        '<span class="cap-chip">'+s.capacityPerSlot+' grp/slot</span></div>';
-    }).join('');
+    var sorted = MEDINA_SITES.slice().sort(function(a,b){ return a.num-b.num; });
+    el.innerHTML = sorted.map(medinaCardHtml).join('');
+    wireMedinaCardDelegation(el);
+    var avgEl = document.getElementById('medina-avg-cap-val');
+    if (avgEl) avgEl.textContent = MEDINA_AVG_CAPACITY.toFixed(1);
   }
 
-  function renderMedinaRouteRows(){
-    var container = document.getElementById('medina-route-rows');
-    if (!container) return;
-    container.innerHTML = MEDINA_ROUTE_DEFS.map(function(r){
-      var roadNote = r.roadKm ? (r.roadKm.toFixed(1)+' km road') : 'resolving…';
-      return '<div class="route-row"><span>'+r.fromName+' ↔ '+r.toName+'</span><span>'+r.km.toFixed(2)+' km straight, '+roadNote+'</span></div>';
-    }).join('');
-  }
-
-  // Detail drawer: what a click on a numbered pin or list row fills in. This is the
-  // "explanation on the right" slot, populated only for whatever is currently
-  // selected rather than dumped as standing paragraphs.
-  function renderMedinaSiteDetail(){
-    var el = document.getElementById('medina-site-detail');
+  // ---------------- Explore tab: site detail panel ----------------
+  function renderMedinaDetail(){
+    var el = document.getElementById('medina-detail');
     if (!el) return;
-    var id = MEDINA_STATE.selectedId;
+    var id = STATE.medinaSelectedId;
     if (!id){
-      el.innerHTML = '<div class="site-detail-empty">Tap a numbered pin on the map, or a site in the list, to see it here.</div>';
+      el.innerHTML = '<div class="mdetail"><div class="mdetail-empty">Tap a numbered site on the map, or a card on the left, to see its live load and description.</div></div>';
       return;
     }
     var s = MEDINA_SITE_BY_ID[id];
-    var booked = medinaBookedGroupsForSite(id);
-    var pct = Math.min(100, Math.round((booked/Math.max(1,s.capacityPerSlot))*100));
-    var routes = MEDINA_ROUTE_DEFS.filter(function(r){ return r.fromId===id || r.toId===id; });
+    var live = medinaSiteLive(s, STATE.medinaT);
+    var hero = s.photo
+      ? '<div class="mdetail-hero" style="background-image:url(\''+s.photo.url+'\');"><span class="mdetail-credit">Photo: '+s.photo.credit+'</span></div>'
+      : '<div class="mdetail-hero illustrated" style="background:linear-gradient(135deg,'+MEDINA_CLUSTER_COLOR[s.cluster]+'33,'+MEDINA_CLUSTER_COLOR[s.cluster]+'11);">'+s.icon+'<span class="mdetail-credit">Illustrative, photo pending</span></div>';
     el.innerHTML =
-      '<div class="card">'+
-        '<div class="card-title"><span><span class="num-badge" style="background:'+MEDINA_CLUSTER_COLOR[s.cluster]+'">'+s.num+'</span> '+s.nameEn+'</span></div>'+
-        '<div class="card-sub" style="direction:rtl;font-size:12px;">'+s.nameAr+'</div>'+
-        '<div style="font-size:12px;line-height:1.7;margin-top:4px;">'+
-          MEDINA_CLUSTER_LABEL[s.cluster]+'<br/>'+
-          'Avg. capacity: <b>'+s.capacityPerSlot+' groups/slot</b> (~'+s.capacityPeople+' pax)<br/>'+
-          'Booked: <b style="color:'+medinaLoadColor(pct)+'">'+booked+' / '+s.capacityPerSlot+' groups ('+pct+'%)</b>'+
+      '<div class="mdetail">'+hero+
+        '<div class="mdetail-head">'+
+          '<div class="mdetail-badge '+(MEDINA_CLUSTER_CLASS[s.cluster]||'')+'">'+s.num+'</div>'+
+          '<div class="mdetail-titles"><div class="mdetail-en">'+s.icon+' '+s.nameEn+'</div><div class="mdetail-ar">'+s.nameAr+'</div></div>'+
         '</div>'+
-        '<div class="cap-bar-track"><div class="cap-bar-fill'+(pct>=90?' over':'')+'" style="width:'+pct+'%;"></div></div>'+
-      '</div>'+
-      (routes.length ? ('<div class="card">'+
-        '<div class="card-title">Connected routes</div>'+
-        routes.map(function(r){ var other = r.fromId===id ? r.toName : r.fromName; return '<div class="route-row"><span>'+other+'</span><span>'+r.km.toFixed(2)+' km</span></div>'; }).join('')+
-        '</div>') : '')+
-      '<button type="button" class="mform-submit" id="medina-book-this-site" style="width:100%;">Book this site</button>';
-    var bookBtn = document.getElementById('medina-book-this-site');
-    if (bookBtn) bookBtn.addEventListener('click', function(){ medinaGoToBooking('site:'+id); });
+        '<div class="mdetail-desc">'+s.desc+'</div>'+
+        '<div class="mstat-row">'+
+          '<div class="mstat"><div class="v" id="mdet-current">'+live.current+'</div><div class="l">Now</div></div>'+
+          '<div class="mstat"><div class="v" id="mdet-predicted">'+live.predicted+'</div><div class="l">Next hr</div></div>'+
+          '<div class="mstat"><div class="v">'+s.capacityPerSlot+'</div><div class="l">Grp / slot</div></div>'+
+          '<div class="mstat"><div class="v" id="mdet-satisfaction">'+medinaSiteSatisfaction(s, STATE.medinaT, live.current/live.capacityPax)+'%</div><div class="l">Satisfaction</div></div>'+
+        '</div>'+
+        '<button type="button" class="mdetail-book-btn" id="mdetail-book-btn">Book this site →</button>'+
+      '</div>';
+    document.getElementById('mdetail-book-btn').addEventListener('click', function(){
+      var tabBtn = document.querySelector('.view-tab[data-key="mbook"]');
+      if (tabBtn) tabBtn.click();
+      medinaSyncBookingSite();
+    });
   }
 
-  // Switches to the Book tab and pre-selects the given site/itinerary chip.
-  function medinaGoToBooking(value){
-    STATE.viewMode = 'mbook';
-    Array.prototype.forEach.call(document.querySelectorAll('#view-tabs .view-tab'), function(b){
-      b.classList.toggle('active', b.dataset.key === 'mbook');
-    });
-    updateMedinaViewVisibility();
-    var chipsEl = document.getElementById('mb-site-chips');
-    var btn = chipsEl && chipsEl.querySelector('.chip-option[data-value="'+value+'"]');
-    if (btn) btn.click();
+  // ---------------- Book tab: operator-facing slot picker ----------------
+  // Populates the site/route <select> once: the 10 individual sites plus 3
+  // operator-friendly itineraries built from the cluster structure (per the brief:
+  // "two or three published itineraries rather than ten independent stops").
+  function populateMedinaBookingForm(){
+    var sel = document.getElementById('mb-site');
+    var originSel = document.getElementById('mb-origin');
+    if (!sel || !originSel) return;
+    if (!sel.options.length){
+      var groups = '<optgroup label="Suggested itineraries">'+
+        '<option value="route:A">Central Cluster loop (sites 4,5,6,7,9,10 + Qiblatain spur)</option>'+
+        '<option value="route:B">Uhud Pair (sites 2,3)</option>'+
+        '<option value="route:ALL">Full city (both clusters + Jabal Ayr)</option>'+
+        '</optgroup><optgroup label="Individual sites">'+
+        MEDINA_SITES.map(function(s){ return '<option value="site:'+s.id+'">'+s.num+'. '+s.nameEn+'</option>'; }).join('')+
+        '</optgroup>';
+      sel.innerHTML = groups;
+      originSel.innerHTML = MEDINA_ORIGINS.map(function(o){ return '<option value="'+o.id+'">'+o.icon+' '+o.label+'</option>'; }).join('');
+      sel.addEventListener('change', function(){ renderMedinaBookSummary(); renderMedinaSlotGrid(); renderMedinaRoutePreview(); });
+      originSel.addEventListener('change', renderMedinaRoutePreview);
+      var dateInput = document.getElementById('mb-date');
+      dateInput.addEventListener('change', renderMedinaSlotGrid);
+    }
+    var dateInput2 = document.getElementById('mb-date');
+    if (!dateInput2.value){
+      var today = new Date(); today.setDate(today.getDate()+1);
+      dateInput2.value = today.toISOString().slice(0,10);
+      dateInput2.min = today.toISOString().slice(0,10);
+    }
+    renderMedinaBookSummary();
+    renderMedinaSlotGrid();
+    renderMedinaRoutePreview();
+  }
+
+  // Smart-routing preview: nearest-neighbor sequence from the chosen starting point
+  // through whichever site(s) the operator picked, using real ministry distances
+  // between sites and haversine only for the first (origin) leg. Per brief objective
+  // 2: "most efficient visiting sequence, based on location, travel time, visit
+  // duration" -- capacity is handled separately by medinaPlanBooking() at submit time.
+  function renderMedinaRoutePreview(){
+    var el = document.getElementById('medina-route-preview');
+    var sel = document.getElementById('mb-site');
+    var originSel = document.getElementById('mb-origin');
+    if (!el || !sel || !sel.value || !originSel.value) return;
+    var siteIds = medinaSitesForValue(sel.value);
+    var route = medinaBuildRoute(originSel.value, siteIds);
+    var driveMin = (route.totalKm / MEDINA_SPEED_KMH) * 60;
+    var visitMin = siteIds.reduce(function(sum,id){ return sum + MEDINA_SITE_BY_ID[id].durationMin; }, 0);
+    var seq = route.order.map(function(id){ return MEDINA_SITE_BY_ID[id].num; }).join(' → ');
+    el.innerHTML = '<div class="route-preview">Suggested order: <b>'+seq+'</b><br/>'+
+      route.totalKm.toFixed(1)+' km · ~'+Math.round(driveMin)+' min driving + ~'+Math.round(visitMin)+' min visiting = ~'+Math.round(driveMin+visitMin)+' min total</div>';
   }
 
   function medinaSiteOrRouteLabel(value){
@@ -2273,17 +2718,139 @@ svg.leaflet-image-layer.leaflet-interactive path {
     if (value==='route:B') return 'Uhud Pair';
     if (value==='route:ALL') return 'Full city itinerary';
     var id = value.replace('site:','');
-    var s = MEDINA_SITE_BY_ID[id];
-    return s ? (s.num+'. '+s.nameEn) : value;
+    return MEDINA_SITE_BY_ID[id] ? (MEDINA_SITE_BY_ID[id].num+'. '+MEDINA_SITE_BY_ID[id].nameEn) : value;
   }
 
-  function medinaEffectiveCapacity(value){
-    var ids = medinaSiteIdsForBookingValue(value);
-    if (!ids.length) return 1;
-    return Math.min.apply(null, ids.map(function(id){ return MEDINA_SITE_BY_ID[id].capacityPerSlot; }));
+  function medinaBookingCluster(value){
+    if (value==='route:A') return 'A';
+    if (value==='route:B') return 'B';
+    if (value==='route:ALL') return 'ALL';
+    var id = value.replace('site:','');
+    return MEDINA_SITE_BY_ID[id] ? MEDINA_SITE_BY_ID[id].cluster : 'A';
   }
-  function medinaBookedForSlot(value, date, slot){
-    return MEDINA_BOOKINGS.filter(function(b){ return b.siteVal===value && b.date===date && b.slot===slot; }).length;
+
+  function medinaBookingSiteNum(value){
+    if (value.indexOf('route:')===0) return value==='route:A' ? 'A' : (value==='route:B' ? 'B' : 'All');
+    var id = value.replace('site:','');
+    return MEDINA_SITE_BY_ID[id] ? MEDINA_SITE_BY_ID[id].num : '-';
+  }
+
+  function medinaCapacityFor(value){
+    if (value==='route:A') return MEDINA_SITES.filter(function(s){ return s.cluster==='A'||s.cluster==='Asat'; }).reduce(function(a,s){ return a+s.capacityPerSlot; },0);
+    if (value==='route:B') return MEDINA_SITES.filter(function(s){ return s.cluster==='B'; }).reduce(function(a,s){ return a+s.capacityPerSlot; },0);
+    if (value==='route:ALL') return MEDINA_SITES.reduce(function(a,s){ return a+s.capacityPerSlot; },0);
+    var id = value.replace('site:','');
+    return MEDINA_SITE_BY_ID[id] ? MEDINA_SITE_BY_ID[id].capacityPerSlot : 4;
+  }
+
+  // Capacity is consumed per coach, not per reservation row -- a 2-coach booking uses
+  // 2 units of a slot's capacityPerSlot, matching "split large groups... to avoid
+  // congestion" rather than treating every booking as a single flat unit.
+  function medinaBookedFor(value, date, slot){
+    return MEDINA_BOOKINGS.filter(function(b){ return b.siteVal===value && b.date===date && b.slot===slot; })
+      .reduce(function(sum,b){ return sum + (b.coaches||1); }, 0);
+  }
+
+  // Sibling alternatives to try when the requested value/slot doesn't have room:
+  // other sites in the same cluster (for a single-site request), or the other
+  // itineraries (for a route request).
+  function medinaCandidateValues(value){
+    if (value.indexOf('route:')===0){
+      return ['route:A','route:B','route:ALL'].filter(function(v){ return v!==value; });
+    }
+    var id = value.replace('site:','');
+    var s = MEDINA_SITE_BY_ID[id];
+    return MEDINA_SITES.filter(function(o){ return o.id!==id && o.cluster===s.cluster; }).map(function(o){ return 'site:'+o.id; });
+  }
+
+  // Allocates `coaches` coach-units for a request, splitting across the best
+  // available (value, slot) combinations when the first choice can't fit them all --
+  // e.g. two coaches from one hotel wanting a slot that only has room for one, or a
+  // cluster route that's full at the requested time. Always tries the exact request
+  // first, then nearby time slots at the same site/route, then sibling sites/routes,
+  // preferring to keep the whole group together and only splitting when it must.
+  function medinaPlanBooking(value, date, slot, coaches){
+    var candidates = [value].concat(medinaCandidateValues(value)).filter(function(v){ return !medinaValueUnsafe(v); });
+    var slotIdx = MEDINA_TIME_SLOTS.indexOf(slot);
+    var curMin = medinaCurrentMinute();
+    var bookableSlots = MEDINA_TIME_SLOTS.filter(function(sl){ return medinaTimeToMin(sl) > curMin; });
+    var tryOrder = [];
+    candidates.forEach(function(val, ci){
+      bookableSlots.forEach(function(sl){ tryOrder.push({ value:val, slot:sl, siteRank:ci }); });
+    });
+    tryOrder.sort(function(a,b){
+      if (a.siteRank !== b.siteRank) return a.siteRank - b.siteRank;
+      return Math.abs(MEDINA_TIME_SLOTS.indexOf(a.slot)-slotIdx) - Math.abs(MEDINA_TIME_SLOTS.indexOf(b.slot)-slotIdx);
+    });
+    var used = {}, chunks = [], remaining = coaches;
+    for (var i=0;i<tryOrder.length && remaining>0;i++){
+      var cand = tryOrder[i];
+      var key = cand.value+'|'+date+'|'+cand.slot;
+      var cap = medinaCapacityFor(cand.value);
+      var booked = medinaBookedFor(cand.value, date, cand.slot) + (used[key]||0);
+      var room = cap - booked;
+      if (room <= 0) continue;
+      var take = Math.min(room, remaining);
+      used[key] = (used[key]||0) + take;
+      chunks.push({ value:cand.value, slot:cand.slot, coaches:take });
+      remaining -= take;
+    }
+    return { chunks:chunks, unallocated:remaining };
+  }
+
+  function renderMedinaBookSummary(){
+    var el = document.getElementById('medina-book-site-summary');
+    var sel = document.getElementById('mb-site');
+    if (!el || !sel || !sel.value) return;
+    var label = medinaSiteOrRouteLabel(sel.value);
+    var num = medinaBookingSiteNum(sel.value);
+    var cap = medinaCapacityFor(sel.value);
+    el.innerHTML = '<div class="mdetail" style="padding:8px 10px;margin-bottom:8px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">'+
+      '<span style="font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;"><span class="msite-badge" style="width:19px;height:19px;font-size:10px;">'+num+'</span>'+label+'</span>'+
+      '<span class="cap-chip">~'+cap+' grp/slot</span></div></div>';
+  }
+
+  function renderMedinaSlotGrid(){
+    var grid = document.getElementById('mb-slot-grid');
+    var sel = document.getElementById('mb-site');
+    var hidden = document.getElementById('mb-slot');
+    var dateInput = document.getElementById('mb-date');
+    if (!grid || !sel || !sel.value) return;
+    var errEl = document.getElementById('mb-slot-error'); if (errEl) errEl.remove();
+    var siteVal = sel.value, date = dateInput.value, cap = medinaCapacityFor(siteVal);
+    hidden.value = '';
+    var curMin = medinaCurrentMinute();
+    var unsafe = medinaValueUnsafe(siteVal);
+    grid.innerHTML = MEDINA_TIME_SLOTS.map(function(t){
+      var past = medinaTimeToMin(t) <= curMin;
+      var booked = medinaBookedFor(siteVal, date, t);
+      var remaining = Math.max(0, cap - booked);
+      var full = remaining <= 0;
+      var label = unsafe ? 'On hold' : (past ? 'Passed' : (full ? 'Full' : remaining+' left'));
+      return '<div class="slot-chip'+(full||unsafe?' full':'')+(past?' past':'')+(unsafe?' unsafe':'')+'" data-slot="'+t+'">'+t+'<span class="rem">'+label+'</span></div>';
+    }).join('');
+    if (unsafe){
+      grid.insertAdjacentHTML('afterend', '<div id="mb-slot-error" style="color:var(--critical);font-size:11.5px;margin-top:4px;">⛈️ Storm advisory: this site is on hold for new reservations. Try a different site, or wait for it to clear in Satisfaction &amp; weather.</div>');
+      return;
+    }
+    Array.prototype.forEach.call(grid.querySelectorAll('.slot-chip:not(.full):not(.past)'), function(chip){
+      chip.addEventListener('click', function(){
+        Array.prototype.forEach.call(grid.querySelectorAll('.slot-chip'), function(c){ c.classList.remove('selected'); });
+        chip.classList.add('selected');
+        hidden.value = chip.getAttribute('data-slot');
+      });
+    });
+  }
+
+  function medinaSyncBookingSite(){
+    var sel = document.getElementById('mb-site');
+    if (!sel) return;
+    var id = STATE.medinaSelectedId;
+    if (id && sel.querySelector('option[value="site:'+id+'"]')) sel.value = 'site:'+id;
+    renderMedinaBookSummary();
+    renderMedinaSlotGrid();
+    renderMedinaRoutePreview();
   }
 
   function genConfirmationCode(){
@@ -2293,162 +2860,588 @@ svg.leaflet-image-layer.leaflet-interactive path {
     return 'MAD-'+new Date().getFullYear()+'-'+code;
   }
 
-  // Purely decorative confirmation "QR": a deterministic pattern from the code, not a
-  // scannable code. Stands in for the brief's objective 4 (QR confirmation).
-  function medinaFakeQr(seedStr){
-    var seed = 7;
-    for (var i=0;i<seedStr.length;i++) seed = (seed*31 + seedStr.charCodeAt(i)) >>> 0;
-    function rnd(){ seed = (Math.imul(seed,1103515245)+12345) >>> 0; return (seed>>>16) % 100; }
-    var cells = '';
-    for (var i=0;i<49;i++) cells += '<span'+(rnd()<45 ? '' : ' class="off"')+'></span>';
-    return '<div class="qr-fake">'+cells+'</div>';
+  // Deterministic pseudo-QR: draws real finder patterns (the three corner squares
+  // every QR code has) plus noise seeded from the confirmation code, so the same
+  // code always renders the same pattern. Illustrative only -- not decodable.
+  function medinaHashStr(str){
+    var h = 0;
+    for (var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+  function drawPseudoQR(canvas, text){
+    var n = 21;
+    var ctx = canvas.getContext('2d');
+    var px = canvas.width / n;
+    var seed = medinaHashStr(text) || 1;
+    function rand(){ seed = (seed*1103515245 + 12345) >>> 0; return (seed >>> 8) / 16777216; }
+    var mod = [];
+    for (var y=0;y<n;y++){ mod.push([]); for (var x=0;x<n;x++) mod[y].push(rand() > 0.54 ? 1 : 0); }
+    function drawFinder(ox, oy){
+      for (var y=0;y<7;y++) for (var x=0;x<7;x++){
+        var on = (x===0||x===6||y===0||y===6) || (x>=2&&x<=4&&y>=2&&y<=4);
+        mod[oy+y][ox+x] = on ? 1 : 0;
+      }
+    }
+    drawFinder(0,0); drawFinder(n-7,0); drawFinder(0,n-7);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#111111';
+    for (var yy=0;yy<n;yy++) for (var xx=0;xx<n;xx++){ if (mod[yy][xx]) ctx.fillRect(xx*px, yy*px, px, px); }
   }
 
-  // Numbered/itinerary chip select for the booking form, built once. Also drives the
-  // time-slot grid, which recolors by illustrative booked-vs-capacity load.
-  function populateMedinaBookingForm(){
-    var chipsEl = document.getElementById('mb-site-chips');
-    if (chipsEl && !chipsEl.dataset.built){
-      var itin = [
-        { value:'route:A', label:'Central Cluster loop', badge:'A', color:'#0ca3a3' },
-        { value:'route:B', label:'Uhud Pair', badge:'B', color:'#eda100' },
-        { value:'route:ALL', label:'Full city', badge:'★', color:'#4a3aa7' }
-      ];
-      var siteItems = MEDINA_SITES.map(function(s){ return { value:'site:'+s.id, label:s.nameEn, badge:s.num, color:MEDINA_CLUSTER_COLOR[s.cluster] }; });
-      chipsEl.innerHTML = itin.concat(siteItems).map(function(it){
-        return '<button type="button" class="chip-option" data-value="'+it.value+'"><span class="num-badge" style="background:'+it.color+'">'+it.badge+'</span>'+it.label+'</button>';
-      }).join('');
-      Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip-option'), function(btn){
-        btn.addEventListener('click', function(){
-          Array.prototype.forEach.call(chipsEl.querySelectorAll('.chip-option'), function(b){ b.classList.toggle('active', b===btn); });
-          document.getElementById('mb-site').value = btn.dataset.value;
-          renderMedinaSlotGrid();
-        });
-      });
-      chipsEl.dataset.built = '1';
-      chipsEl.querySelector('.chip-option').click();
-    }
+  // Shared booking-creation path used by both the manual form and the demo-traffic
+  // generator below: plans capacity-aware chunks, builds each chunk's route +
+  // schedule (arriving exactly at its slot time, per medinaBuildSchedule), and pushes
+  // the resulting booking(s) -- one row per coach-chunk, all sharing one groupCode.
+  function medinaCreateBooking(req){
+    var plan = medinaPlanBooking(req.siteVal, req.date, req.slot, req.coaches);
+    if (!plan.chunks.length) return null;
+    var groupCode = genConfirmationCode();
+    var bookings = plan.chunks.map(function(chunk, idx){
+      var chunkSiteIds = medinaSitesForValue(chunk.value);
+      var route = medinaBuildRoute(req.originId, chunkSiteIds);
+      var schedule = medinaBuildSchedule(req.originId, route.order, route.legKms, medinaTimeToMin(chunk.slot));
+      var chunkGroupSize = Math.max(1, Math.round(req.groupSize * (chunk.coaches/req.coaches)));
+      var booking = {
+        code: plan.chunks.length>1 ? groupCode+'-'+(idx+1) : groupCode,
+        groupCode: groupCode,
+        operator: req.operator,
+        siteVal: chunk.value,
+        siteLabel: medinaSiteOrRouteLabel(chunk.value),
+        cluster: medinaBookingCluster(chunk.value),
+        date: req.date,
+        slot: chunk.slot,
+        groupSize: chunkGroupSize,
+        coaches: chunk.coaches,
+        guide: req.guide,
+        originId: req.originId,
+        route: route.order,
+        totalKm: route.totalKm,
+        legs: schedule.legs,
+        startMin: schedule.startMin,
+        endMin: schedule.endMin,
+        signedOff: false
+      };
+      MEDINA_BOOKINGS.push(booking);
+      return booking;
+    });
+    return { groupCode:groupCode, bookings:bookings };
+  }
+
+  function medinaClearAllBookings(){
+    MEDINA_BOOKINGS.forEach(function(b){
+      if (b.legs) b.legs.forEach(function(leg){ if (leg.layer) medinaBusRouteLayer.removeLayer(leg.layer); });
+    });
+    MEDINA_BOOKINGS.length = 0;
+    Object.keys(medinaBusMarkers).forEach(function(code){ medinaMarkerLayer.removeLayer(medinaBusMarkers[code]); delete medinaBusMarkers[code]; });
+  }
+
+  var MEDINA_DEMO_OPERATORS = ['Al-Noor Tours','Baraka Travel Group','Rawdah Pilgrim Services','Ihsan Coaches','Nur Al-Madinah Tours','Sakinah Travel','Al-Ansar Tour Co.','Waha Heritage Tours'];
+  // Seeds a full illustrative day of concurrent traffic -- full-city trips, single
+  // cluster ("half") trips, and quick single-site visits, from every starting point,
+  // some deliberately oversized so the capacity split in medinaPlanBooking visibly
+  // kicks in. Meant to be played back with the timeline's play button.
+  function medinaGenerateDemoDay(){
+    medinaClearAllBookings();
+    STATE.medinaT = 0; STATE.medinaPlaying = false;
     var dateInput = document.getElementById('mb-date');
-    if (!dateInput.value){
-      var today = new Date(); today.setDate(today.getDate()+1);
-      dateInput.value = today.toISOString().slice(0,10);
-      dateInput.min = today.toISOString().slice(0,10);
-    }
-    renderMedinaSlotGrid();
-  }
-
-  function renderMedinaSlotGrid(){
-    var el = document.getElementById('mb-slot-grid');
-    if (!el) return;
-    var value = document.getElementById('mb-site').value;
-    var date = document.getElementById('mb-date').value;
-    if (!value) { el.innerHTML = ''; return; }
-    var cap = medinaEffectiveCapacity(value);
-    var currentSlot = document.getElementById('mb-slot').value;
-    el.innerHTML = MEDINA_TIME_SLOTS.map(function(t){
-      var booked = medinaBookedForSlot(value, date, t);
-      var pct = booked / cap;
-      var cls = pct >= 1 ? 'full' : (pct >= 0.6 ? 'filling' : 'open');
-      var active = (currentSlot === t) ? ' active' : '';
-      return '<button type="button" class="slot-btn '+cls+active+'" data-slot="'+t+'"'+(cls==='full' ? ' disabled' : '')+'>'+t+'</button>';
-    }).join('');
-    Array.prototype.forEach.call(el.querySelectorAll('.slot-btn:not([disabled])'), function(btn){
-      btn.addEventListener('click', function(){
-        document.getElementById('mb-slot').value = btn.dataset.slot;
-        Array.prototype.forEach.call(el.querySelectorAll('.slot-btn'), function(b){ b.classList.toggle('active', b===btn); });
+    var date = dateInput.value;
+    var reqs = [
+      { origin:'airport',      value:'route:ALL', slot:'08:00', coaches:2, guide:true  },
+      { origin:'haram',        value:'route:A',    slot:'09:00', coaches:3, guide:true  },
+      { origin:'haram',        value:'route:B',    slot:'09:00', coaches:1, guide:false },
+      { origin:'quba-hotels',  value:'site:quba',  slot:'08:00', coaches:1, guide:false },
+      { origin:'quba-hotels',  value:'site:qiblatain', slot:'10:00', coaches:2, guide:true },
+      { origin:'airport-rd',   value:'route:A',    slot:'11:00', coaches:2, guide:false },
+      { origin:'haram',        value:'site:uhud',  slot:'13:00', coaches:1, guide:true  },
+      { origin:'airport',      value:'route:ALL',  slot:'14:00', coaches:1, guide:false },
+      { origin:'quba-hotels',  value:'site:faqir-well', slot:'09:00', coaches:2, guide:false },
+      { origin:'haram',        value:'route:A',    slot:'15:00', coaches:2, guide:true  },
+      { origin:'airport-rd',   value:'site:faqir-well', slot:'09:00', coaches:2, guide:false }, // deliberately collides with the request above (cap 3) to force a visible split
+      { origin:'quba-hotels',  value:'site:jabal-ayr', slot:'10:00', coaches:2, guide:false },
+      { origin:'airport',      value:'site:jabal-ayr', slot:'10:00', coaches:2, guide:true  }   // and this one (cap 2) to force another
+    ];
+    reqs.forEach(function(req, i){
+      medinaCreateBooking({
+        operator: MEDINA_DEMO_OPERATORS[i % MEDINA_DEMO_OPERATORS.length],
+        siteVal: req.value, date: date, slot: req.slot, originId: req.origin,
+        coaches: req.coaches, groupSize: req.coaches*MEDINA_PAX_PER_GROUP, guide: req.guide
       });
     });
-    if (!document.getElementById('mb-slot').value){
-      var firstOpen = el.querySelector('.slot-btn.open') || el.querySelector('.slot-btn:not([disabled])');
-      if (firstOpen) firstOpen.click();
-    }
+    renderMedinaMyBookings();
+    renderMedinaBookingsTable();
+    renderMedinaCapacityCards();
+    renderMedinaSlotGrid();
+    STATE.medinaPlaying = true;
+    var slider = document.getElementById('medina-timeline-slider'); if (slider) slider.value = 0;
+    medinaUpdatePlayBtn(); medinaUpdateClockLabel(); updateMedinaLive();
+    document.getElementById('medina-confirmation').innerHTML =
+      '<div class="route-preview">Demo traffic generated: '+reqs.length+' reservations from '+MEDINA_ORIGINS.length+' starting points, some deliberately oversized so you can watch a group split across slots/sites. Playing the simulated day now, watch the map.</div>';
+    medinaShowToast('🎬 Demo traffic generated: '+reqs.length+' reservations. Playing now.');
   }
 
   function wireMedinaBookingForm(){
     var form = document.getElementById('medina-booking-form');
     if (!form) return;
-    document.getElementById('mb-date').addEventListener('change', renderMedinaSlotGrid);
-    document.getElementById('mb-groupsize').addEventListener('input', function(){
-      var g = parseInt(this.value, 10) || 0;
-      document.getElementById('mb-coaches').value = Math.max(1, Math.ceil(g/45));
-    });
     form.addEventListener('submit', function(e){
       e.preventDefault();
       var siteVal = document.getElementById('mb-site').value;
-      var booking = {
-        code: genConfirmationCode(),
-        operator: document.getElementById('mb-operator').value.trim() || 'Unnamed operator',
-        siteVal: siteVal,
-        siteLabel: medinaSiteOrRouteLabel(siteVal),
-        date: document.getElementById('mb-date').value,
-        slot: document.getElementById('mb-slot').value,
-        groupSize: parseInt(document.getElementById('mb-groupsize').value, 10) || 40,
-        coaches: parseInt(document.getElementById('mb-coaches').value, 10) || 1,
-        guide: document.getElementById('mb-guide').checked
-      };
-      MEDINA_BOOKINGS.push(booking);
+      var slotVal = document.getElementById('mb-slot').value;
+      var originId = document.getElementById('mb-origin').value;
+      var date = document.getElementById('mb-date').value;
+      var coachCount = parseInt(document.getElementById('mb-coaches').value, 10) || 1;
+      var groupSize = parseInt(document.getElementById('mb-groupsize').value, 10) || 40;
+      var operator = document.getElementById('mb-operator').value.trim() || 'Unnamed operator';
+      var guide = document.getElementById('mb-guide').checked;
+      var existingErr = document.getElementById('mb-slot-error');
+      if (!slotVal){
+        if (!existingErr){
+          var grid = document.getElementById('mb-slot-grid');
+          if (grid) grid.insertAdjacentHTML('afterend', '<div id="mb-slot-error" style="color:var(--critical);font-size:10.5px;margin-top:4px;">Pick a time slot above first.</div>');
+        }
+        return;
+      }
+      if (existingErr) existingErr.remove();
+
       var box = document.getElementById('medina-confirmation');
-      box.innerHTML = '<div class="confirmation-box">'+medinaFakeQr(booking.code)+
-        '<div style="text-align:center;">Code <span class="code">'+booking.code+'</span></div>'+
-        '<div style="margin-top:6px;text-align:center;">'+booking.siteLabel+'<br/>'+booking.date+' at '+booking.slot+'<br/>'+booking.groupSize+' pax, '+booking.coaches+' coach(es)</div>'+
-        '<div style="margin-top:6px;color:var(--ink-muted);text-align:center;">Demo only. A production version would confirm through Nusuk.</div></div>';
-      form.reset();
+      var result = medinaCreateBooking({ operator:operator, siteVal:siteVal, date:date, slot:slotVal, originId:originId, coaches:coachCount, groupSize:groupSize, guide:guide });
+      if (!result){
+        box.innerHTML = '<div class="route-preview" style="color:var(--critical);">No capacity anywhere nearby for this date. Try a different date.</div>';
+        return;
+      }
+      var createdBookings = result.bookings, groupCode = result.groupCode;
+      var splitNote = createdBookings.length>1
+        ? '<div class="route-preview">Split into '+createdBookings.length+' coaches because the first choice didn\'t have room for all '+coachCount+': '+
+          createdBookings.map(function(b){ return b.coaches+'x at '+medinaSiteOrRouteLabel(b.siteVal)+' '+b.slot; }).join(', ')+'.</div>'
+        : (createdBookings[0].siteVal !== siteVal || createdBookings[0].slot !== slotVal
+            ? '<div class="route-preview">Your first choice was full, so this was moved to '+medinaSiteOrRouteLabel(createdBookings[0].siteVal)+' at '+createdBookings[0].slot+'.</div>'
+            : '');
+      box.innerHTML = '<div class="qr-confirm"><canvas width="84" height="84" id="mqr-canvas"></canvas>'+
+        '<div class="qr-info"><span class="qr-code">'+groupCode+'</span>'+
+        groupSize+' pax, '+coachCount+' coach'+(coachCount>1?'es':'')+' · departs '+medinaMinToClock(createdBookings[0].startMin)+
+        '<span class="qr-note">Illustrative code, not scannable. Demo stays in this browser tab; production would confirm through Nusuk.</span></div></div>'+
+        splitNote;
+      drawPseudoQR(document.getElementById('mqr-canvas'), groupCode);
+      document.getElementById('mb-operator').value = '';
       document.getElementById('mb-groupsize').value = 40;
       document.getElementById('mb-coaches').value = 1;
-      document.getElementById('mb-slot').value = '';
+      document.getElementById('mb-guide').checked = false;
       renderMedinaSlotGrid();
       renderMedinaMyBookings();
-      updateMedinaMarkers();
-      renderMedinaSiteDetail();
+      renderMedinaBookingsTable();
+      renderMedinaCapacityCards();
     });
     document.getElementById('medina-clear-bookings').addEventListener('click', function(){
-      MEDINA_BOOKINGS.length = 0;
+      medinaClearAllBookings();
       renderMedinaMyBookings();
       renderMedinaBookingsTable();
-      renderMedinaOperatorTable();
+      renderMedinaCapacityCards();
+      renderMedinaSlotGrid();
       document.getElementById('medina-confirmation').innerHTML = '';
-      updateMedinaMarkers();
-      renderMedinaSiteDetail();
     });
   }
 
+  // Every reservation gets its QR here too, not just the one just submitted --
+  // including ones the demo generator created, so "auto" bookings are never QR-less.
   function renderMedinaMyBookings(){
     var el = document.getElementById('medina-my-bookings');
     if (!el) return;
-    if (!MEDINA_BOOKINGS.length){ el.textContent = 'None yet.'; return; }
-    el.innerHTML = MEDINA_BOOKINGS.slice().reverse().map(function(b){
-      return '<div style="padding:4px 0;border-top:1px solid var(--grid);"><span class="code" style="font-family:ui-monospace,monospace;font-weight:700;">'+b.code+'</span>: '+b.siteLabel+', '+b.date+' '+b.slot+' ('+b.groupSize+' pax)</div>';
+    if (!MEDINA_BOOKINGS.length){ el.textContent = 'No bookings yet.'; return; }
+    var list = MEDINA_BOOKINGS.slice().reverse();
+    el.innerHTML = list.map(function(b, i){
+      return '<div class="mbooking-row"><canvas width="42" height="42" class="mbooking-qr" id="mbqr-'+i+'"></canvas>'+
+        '<div class="mbooking-info"><span class="code">'+b.code+'</span><br/>'+b.siteLabel+', '+b.date+' '+b.slot+' ('+b.groupSize+' pax)</div></div>';
     }).join('');
+    list.forEach(function(b, i){
+      var canvas = document.getElementById('mbqr-'+i);
+      if (canvas) drawPseudoQR(canvas, b.code);
+    });
   }
 
+  function medinaPhaseLabel(phase){
+    return { upcoming:'Upcoming', 'in-progress':'On visit', ready:'Awaiting sign-off', completed:'Completed' }[phase] || phase;
+  }
   function renderMedinaBookingsTable(){
     var tbody = document.getElementById('medina-bookings-body');
     if (!tbody) return;
     if (!MEDINA_BOOKINGS.length){
-      tbody.innerHTML = '<tr><td colspan="8" style="color:var(--ink-muted);">None yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="color:var(--ink-muted);">No reservations yet.</td></tr>';
       return;
     }
+    var curMin = medinaCurrentMinute();
     tbody.innerHTML = MEDINA_BOOKINGS.slice().reverse().map(function(b){
-      return '<tr><td>'+b.code+'</td><td>'+b.operator+'</td><td>'+b.siteLabel+'</td><td>'+b.date+'</td><td>'+b.slot+'</td>'+
-        '<td class="num">'+b.groupSize+'</td><td class="num">'+b.coaches+'</td><td>'+(b.guide?'Yes':'No')+'</td></tr>';
+      var phase = medinaBookingPhase(b, curMin);
+      return '<tr><td>'+medinaBookingSiteNum(b.siteVal)+'</td><td>'+b.code+'</td><td>'+b.operator+'</td><td>'+b.siteLabel+'</td><td>'+b.date+'</td><td>'+b.slot+'</td>'+
+        '<td class="num">'+b.groupSize+'</td><td class="num">'+b.coaches+'</td><td>'+(b.guide?'Yes':'No')+'</td>'+
+        '<td><span class="mstatus '+phase+'" id="mstatus-'+b.code+'">'+medinaPhaseLabel(phase)+'</span></td>'+
+        '<td><button type="button" class="signoff-btn" id="signoff-'+b.code+'" data-code="'+b.code+'" '+(phase!=='ready'?'disabled':'')+'>Sign off</button></td></tr>';
     }).join('');
+    Array.prototype.forEach.call(tbody.querySelectorAll('.signoff-btn'), function(btn){
+      btn.addEventListener('click', function(){ medinaSignOffBooking(btn.getAttribute('data-code')); });
+    });
+  }
+  function medinaSignOffBooking(code){
+    var b = MEDINA_BOOKINGS.filter(function(x){ return x.code===code; })[0];
+    if (!b) return;
+    if (medinaBookingPhase(b, medinaCurrentMinute()) !== 'ready') return;
+    b.signedOff = true;
+    renderMedinaBookingsTable();
+    renderMedinaCapacityCards();
+  }
+  // Lightweight per-tick refresh of just the status badge + sign-off button, without
+  // rebuilding the whole table -- keeps row hover/focus stable while the sim plays.
+  function medinaRefreshBookingPhases(curMin){
+    MEDINA_BOOKINGS.forEach(function(b){
+      var phase = medinaBookingPhase(b, curMin);
+      var badge = document.getElementById('mstatus-'+b.code);
+      if (badge){ badge.className = 'mstatus '+phase; badge.textContent = medinaPhaseLabel(phase); }
+      var btn = document.getElementById('signoff-'+b.code);
+      if (btn) btn.disabled = (phase !== 'ready');
+    });
   }
 
-  // Per-site operator table: average capacity (in groups and pax) next to how many
-  // demo reservations are booked against it. Genuinely updates as bookings change.
-  function renderMedinaOperatorTable(){
-    var el = document.getElementById('medina-capacity-table');
+  // Illustrative capacity load per cluster: sums booked reservations against the
+  // cluster's total per-slot placeholder capacity. A demo mechanic, not a real
+  // capacity model -- there is no real capacity data yet.
+  function renderMedinaAvgStats(){
+    var el = document.getElementById('medina-avg-stats');
     if (!el) return;
-    el.innerHTML = MEDINA_SITES.map(function(s){
-      var booked = medinaBookedGroupsForSite(s.id);
-      var pct = Math.min(100, Math.round((booked/Math.max(1,s.capacityPerSlot))*100));
-      return '<tr><td><span class="num-badge" style="background:'+MEDINA_CLUSTER_COLOR[s.cluster]+'">'+s.num+'</span></td>'+
-        '<td>'+s.nameEn+'</td>'+
-        '<td class="num">'+s.capacityPerSlot+' grp<br/><span style="color:var(--ink-muted);">~'+s.capacityPeople+' pax</span></td>'+
-        '<td class="num">'+booked+'</td>'+
-        '<td><div class="cap-bar-track"><div class="cap-bar-fill'+(pct>=90?' over':'')+'" style="width:'+pct+'%;"></div></div></td></tr>';
-    }).join('');
+    var avgPax = Math.round(MEDINA_AVG_CAPACITY * MEDINA_PAX_PER_GROUP);
+    el.innerHTML =
+      '<div class="stat-tile"><div class="v">'+MEDINA_AVG_CAPACITY.toFixed(1)+'</div><div class="l">Avg capacity per site (grp/slot, ~'+avgPax+' pax)</div></div>'+
+      '<div class="stat-tile"><div class="v">'+MEDINA_BOOKINGS.length+'</div><div class="l">Reservations logged this session</div></div>';
   }
+  // Per-site capacity load, numbered like every other list in the app -- no cluster
+  // labels here. Route/itinerary bookings (route:A/B/ALL) count against every site
+  // they actually visit, via medinaSitesForValue, so a full-city booking shows up
+  // against all ten rows and a cluster-loop booking against just its own sites.
+  function renderMedinaCapacityCards(){
+    var el = document.getElementById('medina-capacity-cards');
+    if (!el) return;
+    var bookedBySite = {};
+    MEDINA_SITES.forEach(function(s){ bookedBySite[s.id] = 0; });
+    MEDINA_BOOKINGS.forEach(function(b){
+      var units = b.coaches || 1;
+      medinaSitesForValue(b.siteVal).forEach(function(id){ if (bookedBySite[id] != null) bookedBySite[id] += units; });
+    });
+    var sorted = MEDINA_SITES.slice().sort(function(a,b){ return a.num-b.num; });
+    el.innerHTML = sorted.map(function(s){
+      var cap = s.capacityPerSlot || 1;
+      var booked = bookedBySite[s.id];
+      var pct = Math.min(100, Math.round((booked/cap)*100));
+      return '<div class="mcap-row"><span class="msite-badge '+(MEDINA_CLUSTER_CLASS[s.cluster]||'')+'" style="width:26px;height:26px;font-size:11px;">'+s.num+'</span>'+
+        '<span class="mcap-name">'+s.nameEn+'</span>'+
+        '<div class="cap-bar-track"><div class="cap-bar-fill'+(pct>=90?' over':'')+'" style="width:'+pct+'%;"></div></div>'+
+        '<span class="cap-chip">'+booked+'/'+cap+'</span></div>';
+    }).join('');
+    renderMedinaAvgStats();
+  }
+
+  // ---------------- Weather & visitor satisfaction tab ----------------
+  function medinaSetWeather(w){
+    if (STATE.medinaWeather === w) return;
+    STATE.medinaWeather = w;
+    renderMedinaWeatherButtons();
+    renderMedinaWeatherStatus();
+    renderMedinaSlotGrid(); // reflect newly blocked/unblocked slots if the Book tab has one open
+    var affected = MEDINA_SITES.filter(medinaSiteUnsafe).map(function(s){ return s.num+'. '+s.nameEn; });
+    if (w === 'clear') medinaShowToast('☀️ Weather cleared. All sites open for booking again.');
+    else medinaShowToast(MEDINA_WEATHER_INFO[w].icon+' '+MEDINA_WEATHER_INFO[w].label+' declared.'+(affected.length?' On hold: '+affected.join(', ')+'.':''));
+  }
+  function renderMedinaWeatherButtons(){
+    var el = document.getElementById('medina-weather-btns');
+    if (!el) return;
+    el.innerHTML = ['clear','rain','storm'].map(function(w){
+      var info = MEDINA_WEATHER_INFO[w];
+      return '<button type="button" class="scenario-btn'+(STATE.medinaWeather===w?' active':'')+'" data-weather="'+w+'">'+info.icon+' '+info.label+'</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.scenario-btn'), function(btn){
+      btn.addEventListener('click', function(){ medinaSetWeather(btn.getAttribute('data-weather')); });
+    });
+  }
+  function renderMedinaWeatherStatus(){
+    var el = document.getElementById('medina-weather-status');
+    if (!el) return;
+    var info = MEDINA_WEATHER_INFO[STATE.medinaWeather];
+    var affected = MEDINA_SITES.filter(medinaSiteUnsafe);
+    el.innerHTML = '<div class="route-preview">'+info.icon+' <b>'+info.label+'.</b> '+info.desc+
+      (affected.length ? '<br/>On hold: '+affected.map(function(s){ return s.num+'. '+s.nameEn; }).join(', ') : '')+'</div>';
+  }
+  function renderMedinaSatisfactionRows(){
+    var el = document.getElementById('medina-satisfaction-rows');
+    if (!el) return;
+    var sorted = MEDINA_SITES.slice().sort(function(a,b){ return a.num-b.num; });
+    el.innerHTML = sorted.map(function(s){
+      return '<div class="mcap-row" data-medina-id="'+s.id+'" style="cursor:pointer;">'+
+        '<span class="msite-badge '+(MEDINA_CLUSTER_CLASS[s.cluster]||'')+'" style="width:26px;height:26px;font-size:11px;">'+s.num+'</span>'+
+        '<span class="mcap-name">'+s.nameEn+'</span>'+
+        '<div class="occ-track"><div class="occ-fill" id="msat-fill-'+s.id+'" style="width:0%;"></div></div>'+
+        '<span class="msite-pax" id="msat-val-'+s.id+'" style="min-width:36px;">-</span></div>';
+    }).join('');
+    wireMedinaCardDelegation(el);
+  }
+
+  // ---------------- Medina simulated-day clock + bus tracking ----------------
+  var MEDINA_DAY_START_MIN = 420;   // 7:00am
+  var MEDINA_DAY_END_MIN = 1080;    // 6:00pm
+  var MEDINA_DAY_SPAN_MIN = MEDINA_DAY_END_MIN - MEDINA_DAY_START_MIN;
+  var MEDINA_DAY_SECONDS = 300; // wall-clock seconds for one full compressed day at 1x
+  var medinaSpeedMultiplier = 0.4; // default slower, so travel legs are actually watchable
+  function medinaCurrentMinute(){ return MEDINA_DAY_START_MIN + STATE.medinaT * MEDINA_DAY_SPAN_MIN; }
+  var medinaBusMarkers = {};
+  var medinaLegState = {};
+  var medinaCapacityAlerted = {}; // site id -> true while we've already alerted for this "full" streak
+
+  function medinaSiteNumName(siteId){
+    var s = MEDINA_SITE_BY_ID[siteId];
+    return s ? (s.num+'. '+s.nameEn) : siteId;
+  }
+  function medinaShowToast(text){
+    var container = document.getElementById('medina-toasts');
+    if (!container) return;
+    var el = document.createElement('div');
+    el.className = 'medina-toast';
+    el.textContent = text;
+    container.appendChild(el);
+    while (container.children.length > 5) container.removeChild(container.firstChild);
+    setTimeout(function(){
+      el.classList.add('fade');
+      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 550);
+    }, 4200);
+  }
+
+  // Where a booking's coach currently is, given the simulated minute-of-day: null
+  // before the trip starts, an interpolated point while traveling, the site's own
+  // position while dwelling there, or the final site (parked) once the route is done.
+  function medinaBusPositionAt(booking, curMin){
+    if (!booking.legs || curMin < booking.startMin) return null;
+    for (var i=0;i<booking.legs.length;i++){
+      var leg = booking.legs[i];
+      if (curMin <= leg.endMin){
+        if (leg.type==='dwell') return { latlng:leg.latlng, dwell:true, siteId:leg.siteId };
+        var span = leg.endMin - leg.startMin;
+        var f = span<=0 ? 1 : Math.max(0, Math.min(1, (curMin-leg.startMin)/span));
+        var path = leg.path || [leg.from, leg.to];
+        return { latlng: medinaPointAtPathFraction(path, f), dwell:false, isReturn:!!leg.isReturn };
+      }
+    }
+    var last = booking.legs[booking.legs.length-1];
+    var parkedAt = last.type==='dwell' ? last.latlng : last.to;
+    return { latlng:parkedAt, dwell:true, finished:true };
+  }
+  // Derived lifecycle phase for a booking at the current simulated minute -- 'upcoming'
+  // and 'completed' don't require any stored status; only the operator's sign-off
+  // (booking.signedOff) is persisted, so playback can be scrubbed freely either way.
+  function medinaBookingPhase(booking, curMin){
+    if (booking.signedOff) return 'completed';
+    if (!booking.legs) return 'upcoming';
+    if (curMin < booking.startMin) return 'upcoming';
+    if (curMin <= booking.endMin) return 'in-progress';
+    return 'ready';
+  }
+
+  // ---------------- Medina live-occupancy + bus loop (illustrative simulation) ----------------
+  // Mirrors the Fukui node glow/popup pattern (see drawHeat/setHoverNode above) but
+  // runs on its own light interval rather than the Fukui rAF tick, which early-returns
+  // for any city other than 'fukui'. Touches existing elements by id instead of
+  // rebuilding card HTML, so hover state on the cards/map never gets dropped mid-update.
+  // Small deterministic offset so multiple coaches/crowds parked at the same site
+  // don't render exactly on top of one another -- a stand-in for "more coaches can
+  // be in the same area" reading as visually true, not just a bigger number.
+  function medinaJitterAround(latlng, idx){
+    if (idx <= 0) return latlng;
+    var angle = idx * 2.4;
+    var r = 0.00035 + idx*0.00006;
+    return [ latlng[0] + Math.cos(angle)*r, latlng[1] + Math.sin(angle)*r ];
+  }
+  var medinaPeopleDotPools = {};
+  function medinaUpdatePeopleDots(s, pax){
+    var desired = Math.max(0, Math.min(10, Math.round(pax/15)));
+    var pool = medinaPeopleDotPools[s.id] || (medinaPeopleDotPools[s.id] = []);
+    while (pool.length < desired){
+      var i = pool.length;
+      var angle = i*2.4, r = 0.00022 + (i%5)*0.00013;
+      var dot = L.marker([s.lat+Math.cos(angle)*r, s.lng+Math.sin(angle)*r], {
+        icon: L.divIcon({ className:'medina-people-dot', html:'<div class="mpeople-dot"></div>', iconSize:[5,5], iconAnchor:[2,2] }),
+        interactive:false
+      }).addTo(medinaMarkerLayer);
+      pool.push(dot);
+    }
+    while (pool.length > desired){ medinaMarkerLayer.removeLayer(pool.pop()); }
+  }
+
+  function updateMedinaLive(){
+    if (CITY !== 'medina') return;
+    var cyclePos = STATE.medinaT;
+    var curMin = medinaCurrentMinute();
+
+    // Pass 1: move every booking's coach, and tally which sites actually have real
+    // booked groups on them right now -- this is what makes the left-panel/map load
+    // reflect real reservations, not just the illustrative baseline.
+    var siteReal = {};
+    MEDINA_SITES.forEach(function(s){ siteReal[s.id] = { buses:0, pax:0 }; });
+    var dwellIdx = {};
+    MEDINA_BOOKINGS.forEach(function(b){
+      var pos = medinaBusPositionAt(b, curMin);
+      var marker = medinaBusMarkers[b.code];
+      if (!pos || b.signedOff){
+        if (marker){ medinaMarkerLayer.removeLayer(marker); delete medinaBusMarkers[b.code]; }
+        delete medinaLegState[b.code];
+        if (b.legs) b.legs.forEach(function(leg){
+          if (!leg.layer) return;
+          if (b.signedOff){ medinaBusRouteLayer.removeLayer(leg.layer); leg.layer = null; }
+          else leg.layer.setStyle({ opacity:0 });
+        });
+        return;
+      }
+      if (b.legs) b.legs.forEach(function(leg){ if (leg.layer) leg.layer.setStyle({ opacity:0.55 }); });
+      var curKey = pos.dwell ? ('dwell:'+(pos.siteId||'origin')) : 'travel';
+      var prevKey = medinaLegState[b.code];
+      if (STATE.medinaPlaying && prevKey !== undefined && prevKey !== curKey){
+        if (pos.dwell && pos.siteId){
+          medinaShowToast('🚌 '+b.operator+' ('+b.code+') arrived at '+medinaSiteNumName(pos.siteId)+' · '+medinaMinToClock(curMin));
+        } else if (pos.dwell && !pos.siteId){
+          var originLabel = (MEDINA_ORIGIN_BY_ID[b.originId]||{}).label || 'starting point';
+          medinaShowToast('🚌 '+b.operator+' ('+b.code+') returned to '+originLabel+' · '+medinaMinToClock(curMin));
+        } else if (!pos.dwell && prevKey.indexOf('dwell:')===0){
+          var leftId = prevKey.slice(6);
+          var leftName = leftId==='origin' ? 'the starting point' : medinaSiteNumName(leftId);
+          medinaShowToast('🚌 '+b.operator+' ('+b.code+') left '+leftName+' · '+medinaMinToClock(curMin));
+        }
+      }
+      medinaLegState[b.code] = curKey;
+      var renderLatLng = pos.latlng;
+      if (pos.dwell && pos.siteId && siteReal[pos.siteId]){
+        var idx = dwellIdx[pos.siteId] || 0;
+        dwellIdx[pos.siteId] = idx + 1;
+        renderLatLng = medinaJitterAround(pos.latlng, idx);
+        siteReal[pos.siteId].buses += 1;
+        siteReal[pos.siteId].pax += (b.groupSize||0);
+      }
+      if (!marker){
+        marker = L.marker(renderLatLng, {
+          icon: L.divIcon({ className:'medina-bus-icon', html:'<div class="mbus-icon">🚌</div>', iconSize:[40,40], iconAnchor:[20,20] }),
+          interactive:true
+        }).addTo(medinaMarkerLayer);
+        marker.bindTooltip('', {sticky:true});
+        medinaBusMarkers[b.code] = marker;
+      }
+      marker.setLatLng(renderLatLng);
+      marker.setTooltipContent(b.operator+' · '+b.code+' · '+b.groupSize+' pax'+(pos.dwell?' · at site':(pos.isReturn?' · returning':' · en route')));
+    });
+
+    // Pass 2: per-site visuals combine the illustrative baseline with real booked
+    // groups actually dwelling there right now, so a site full of buses and people
+    // reads as full everywhere -- map glow, occupancy bar, and the left-panel cards.
+    MEDINA_SITES.forEach(function(s){
+      var baseline = medinaSiteLive(s, cyclePos);
+      var real = siteReal[s.id];
+      // Real, booked groups get priority for the site's capacity; the illustrative
+      // ambient baseline only fills whatever room they leave, so the two together
+      // can never read as over capacity -- the node empties out for real arrivals
+      // instead of just stacking a number on top of it.
+      var realPax = Math.min(baseline.capacityPax, real.pax);
+      var ambientPax = Math.min(baseline.current, Math.max(0, baseline.capacityPax - realPax));
+      var current = realPax + ambientPax;
+      var ratio = current / baseline.capacityPax;
+      var sat = medinaSiteSatisfaction(s, cyclePos, ratio);
+      var glow = medinaGlowMarkers[s.id];
+      if (glow){
+        glow.setRadius(24 + Math.sqrt(Math.max(current,1))*2.4);
+        glow.setStyle({ fillOpacity: Math.min(0.55, 0.14 + ratio*0.45) });
+      }
+      if (STATE.medinaPlaying){
+        if (ratio >= 0.96 && !medinaCapacityAlerted[s.id]){
+          medinaCapacityAlerted[s.id] = true;
+          medinaShowToast('⚠️ '+medinaSiteNumName(s.id)+' at capacity ('+current+'/'+Math.round(baseline.capacityPax)+' pax). New reservations route to another slot or site.');
+        } else if (ratio < 0.85){
+          medinaCapacityAlerted[s.id] = false;
+        }
+      }
+      var badge = medinaMarkers[s.id];
+      if (badge) badge.setPopupContent(medinaPopupHtml(s, current, real.buses, sat));
+      var occEl = document.getElementById('mocc-'+s.id);
+      if (occEl){
+        occEl.style.width = Math.min(100, Math.round(ratio*100))+'%';
+        occEl.className = 'occ-fill '+medinaOccTier(ratio);
+      }
+      var paxEl = document.getElementById('mpax-'+s.id);
+      if (paxEl) paxEl.textContent = (real.buses?'🚌'+real.buses+' ':'')+'~'+current+'/'+Math.round(baseline.capacityPax);
+      if (STATE.medinaSelectedId === s.id){
+        var curEl = document.getElementById('mdet-current'); if (curEl) curEl.textContent = current;
+        var predEl = document.getElementById('mdet-predicted'); if (predEl) predEl.textContent = baseline.predicted;
+        var satEl = document.getElementById('mdet-satisfaction'); if (satEl) satEl.textContent = sat+'%';
+      }
+      medinaUpdatePeopleDots(s, current);
+      var satFillEl = document.getElementById('msat-fill-'+s.id);
+      var satValEl = document.getElementById('msat-val-'+s.id);
+      if (satFillEl){ satFillEl.style.width = sat+'%'; satFillEl.className = 'occ-fill '+medinaSatTier(sat); }
+      if (satValEl) satValEl.textContent = sat+'%';
+    });
+    if (STATE.viewMode==='moperator' && CITY==='medina') medinaRefreshBookingPhases(curMin);
+    if (STATE.viewMode==='mbook' && CITY==='medina') medinaRefreshSlotGridPastState(curMin);
+  }
+
+  // Touches only the chips whose past/future state actually changed (crossing the
+  // current simulated time forward while playing, or backward if the slider is
+  // scrubbed) -- never rebuilds the grid, so it never disturbs the operator's current
+  // slot selection while the sim runs in the background.
+  function medinaRefreshSlotGridPastState(curMin){
+    var grid = document.getElementById('mb-slot-grid');
+    var sel = document.getElementById('mb-site');
+    var dateInput = document.getElementById('mb-date');
+    if (!grid || !sel || !sel.value) return;
+    var siteVal = sel.value, date = dateInput.value, cap = medinaCapacityFor(siteVal);
+    Array.prototype.forEach.call(grid.querySelectorAll('.slot-chip'), function(chip){
+      var slot = chip.getAttribute('data-slot');
+      var isPast = medinaTimeToMin(slot) <= curMin;
+      var wasPast = chip.classList.contains('past');
+      if (isPast === wasPast) return;
+      chip.classList.toggle('past', isPast);
+      var remEl = chip.querySelector('.rem');
+      if (isPast){
+        if (remEl) remEl.textContent = 'Passed';
+        if (chip.classList.contains('selected')){
+          chip.classList.remove('selected');
+          var hidden = document.getElementById('mb-slot'); if (hidden) hidden.value = '';
+        }
+      } else {
+        var booked = medinaBookedFor(siteVal, date, slot);
+        var remaining = Math.max(0, cap - booked);
+        var full = remaining <= 0;
+        chip.classList.toggle('full', full);
+        if (remEl) remEl.textContent = full ? 'Full' : remaining+' left';
+      }
+    });
+  }
+
+  var medinaLastTs = null;
+  function medinaUpdatePlayBtn(){
+    var btn = document.getElementById('medina-play-btn');
+    if (btn) btn.innerHTML = STATE.medinaPlaying ? '&#10074;&#10074;' : '&#9654;';
+  }
+  function medinaUpdateClockLabel(){
+    var el = document.getElementById('medina-timeline-caption');
+    if (el) el.textContent = medinaMinToClock(medinaCurrentMinute()) + ' · simulated visiting day (7:00 AM to 6:00 PM)';
+  }
+  function medinaTick(){
+    if (CITY === 'medina'){
+      var now = Date.now();
+      var dt = medinaLastTs ? (now-medinaLastTs)/1000 : 0;
+      medinaLastTs = now;
+      if (STATE.medinaPlaying){
+        STATE.medinaT = STATE.medinaT + (dt*medinaSpeedMultiplier)/MEDINA_DAY_SECONDS;
+        if (STATE.medinaT >= 1){ STATE.medinaT = 1; STATE.medinaPlaying = false; medinaUpdatePlayBtn(); }
+        var slider = document.getElementById('medina-timeline-slider');
+        if (slider) slider.value = Math.round(STATE.medinaT*100);
+        medinaUpdateClockLabel();
+      }
+      updateMedinaLive();
+    } else {
+      medinaLastTs = null;
+    }
+    requestAnimationFrame(medinaTick);
+  }
+  requestAnimationFrame(medinaTick);
 
   // ---------------- Sidebar row DOM, built once ----------------
   // Congestion / JMA / camera rows used to be rebuilt from scratch (innerHTML) on
@@ -2594,23 +3587,25 @@ svg.leaflet-image-layer.leaflet-interactive path {
     { key:'economic',   label:'Economic impact', labelJa:'経済的影響' }
   ];
   var MEDINA_VIEW_TABS = [
-    { key:'msites',    label:'Sites & routes' },
-    { key:'mbook',     label:'Book a visit' },
-    { key:'moperator', label:'Operator console' }
+    { key:'msites',      label:'Explore sites' },
+    { key:'mbook',       label:'Book (operator)' },
+    { key:'moperator',   label:'Manage & capacity' },
+    { key:'mconditions', label:'Satisfaction & weather' }
   ];
   var HALO_DIM_BY_MODE = { overview:1, congestion:0.22, weather:1.1, sentiment:0.18, flow:0.1, economic:1 };
   function updateEconDashboardVisibility(){
     document.getElementById('econ-dashboard').style.display = (CITY==='fukui' && STATE.viewMode === 'economic') ? 'flex' : 'none';
   }
   function updateMedinaViewVisibility(){
-    ['msites','mbook','moperator'].forEach(function(key){
+    ['msites','mbook','moperator','mconditions'].forEach(function(key){
       var el = document.getElementById('medina-view-'+key);
       if (el) el.classList.toggle('active', CITY==='medina' && STATE.viewMode === key);
     });
     if (CITY==='medina'){
-      if (STATE.viewMode==='msites'){ renderMedinaSiteDetail(); renderMedinaRouteRows(); }
-      if (STATE.viewMode==='mbook') renderMedinaMyBookings();
-      if (STATE.viewMode==='moperator'){ renderMedinaOperatorTable(); renderMedinaBookingsTable(); }
+      if (STATE.viewMode==='msites'){ renderMedinaDetail(); }
+      if (STATE.viewMode==='mbook'){ renderMedinaMyBookings(); renderMedinaSlotGrid(); renderMedinaRoutePreview(); }
+      if (STATE.viewMode==='moperator'){ renderMedinaCapacityCards(); renderMedinaBookingsTable(); }
+      if (STATE.viewMode==='mconditions'){ renderMedinaWeatherButtons(); renderMedinaWeatherStatus(); renderMedinaSatisfactionRows(); }
     }
   }
   function renderViewTabs(){
@@ -2637,7 +3632,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   // ---------------- State & controls ----------------
   var STATE = { t:0, playing:false, scenario:'none', autoReroute:false, rerouteActive:false, _lastRerouteVisual:false,
-                hoverId:null, selectedId:null, freezeOnPause:true, viewMode:'overview' };
+                hoverId:null, selectedId:null, freezeOnPause:true, viewMode:'overview',
+                medinaSelectedId:null, medinaHoverId:null, medinaT:0, medinaPlaying:false, medinaWeather:'clear' };
   var slider = document.getElementById('timeline-slider');
   var playBtn = document.getElementById('play-btn');
   var caption = document.getElementById('timeline-caption');
@@ -2651,6 +3647,39 @@ svg.leaflet-image-layer.leaflet-interactive path {
     STATE.playing = !STATE.playing;
     playBtn.innerHTML = STATE.playing ? '&#10074;&#10074;' : '&#9654;';
   });
+
+  // ---- Medina simulated-day playback controls ----
+  var medinaPlayBtn = document.getElementById('medina-play-btn');
+  var medinaSlider = document.getElementById('medina-timeline-slider');
+  var medinaResetBtn = document.getElementById('medina-reset-btn');
+  medinaPlayBtn.addEventListener('click', function(){
+    STATE.medinaPlaying = !STATE.medinaPlaying;
+    medinaUpdatePlayBtn();
+  });
+  medinaSlider.addEventListener('input', function(){
+    STATE.medinaT = parseFloat(medinaSlider.value)/100;
+    STATE.medinaPlaying = false;
+    medinaUpdatePlayBtn();
+    medinaUpdateClockLabel();
+    updateMedinaLive();
+  });
+  medinaResetBtn.addEventListener('click', function(){
+    STATE.medinaT = 0;
+    STATE.medinaPlaying = false;
+    medinaSlider.value = 0;
+    medinaUpdatePlayBtn();
+    medinaUpdateClockLabel();
+    updateMedinaLive();
+  });
+  medinaUpdateClockLabel();
+  Array.prototype.forEach.call(document.querySelectorAll('#medina-speed-btns .speed-btn'), function(btn){
+    btn.addEventListener('click', function(){
+      medinaSpeedMultiplier = parseFloat(btn.dataset.speed);
+      Array.prototype.forEach.call(document.querySelectorAll('#medina-speed-btns .speed-btn'), function(b){ b.classList.toggle('active', b===btn); });
+    });
+  });
+  var medinaDemoBtn = document.getElementById('medina-demo-btn');
+  if (medinaDemoBtn) medinaDemoBtn.addEventListener('click', medinaGenerateDemoDay);
 
   // Playback speed control -- default loop slowed down from the original ~26s/loop.
   var speedMultiplier = 1;
@@ -2668,18 +3697,67 @@ svg.leaflet-image-layer.leaflet-interactive path {
   STATE.freezeOnPause = freezeToggle.checked;
   freezeToggle.addEventListener('change', function(){ STATE.freezeOnPause = freezeToggle.checked; });
 
-  // Collapsible side panels: both start open. Each panel's own toggle arrow flips its
-  // width to 0 and back; the map/sidebar layout is flex, so the map column simply
-  // expands to fill whatever space a collapsed panel frees up.
-  function wirePanelToggle(panelEl, btnEl, collapsedGlyph, expandedGlyph){
+  // Collapsible + resizable side panels. The arrow handle does double duty: a plain
+  // click/tap toggles the panel fully open/closed (as before); pressing and dragging
+  // it (mouse or touch, via Pointer Events which unify both) resizes the panel live.
+  // A synthesized click always follows a drag on pointerup, so a `moved` flag lets the
+  // click handler tell "was this a drag" from "was this a tap" and skip the toggle.
+  function wirePanelResizer(panelEl, btnEl, side, collapsedGlyph, expandedGlyph, minW, maxW){
+    var dragging = false, moved = false, startX = 0, startWidth = 0;
+    function setNoAnim(on){
+      panelEl.classList.toggle('no-anim', on);
+      btnEl.classList.toggle('no-anim', on);
+    }
+    function applyWidth(w){
+      w = Math.max(minW, Math.min(maxW, w));
+      panelEl.style.width = w+'px';
+      btnEl.style[side] = w+'px';
+      panelEl.dataset.customWidth = w;
+      return w;
+    }
+    btnEl.addEventListener('pointerdown', function(e){
+      if (panelEl.classList.contains('collapsed')) return; // tap first to open, then drag to resize
+      dragging = true; moved = false;
+      startX = e.clientX;
+      startWidth = panelEl.getBoundingClientRect().width;
+      setNoAnim(true);
+      if (btnEl.setPointerCapture){ try { btnEl.setPointerCapture(e.pointerId); } catch(err){} }
+    });
+    btnEl.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      var dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      if (!moved) return;
+      applyWidth(side==='left' ? startWidth+dx : startWidth-dx);
+    });
+    function endDrag(){ dragging = false; setNoAnim(false); }
+    btnEl.addEventListener('pointerup', endDrag);
+    btnEl.addEventListener('pointercancel', endDrag);
     btnEl.addEventListener('click', function(){
+      if (moved){ moved = false; return; } // that was a resize drag, not a tap
       var collapsed = panelEl.classList.toggle('collapsed');
       btnEl.classList.toggle('collapsed', collapsed);
       btnEl.innerHTML = collapsed ? collapsedGlyph : expandedGlyph;
+      if (collapsed){
+        panelEl.style.width = ''; btnEl.style[side] = '';
+      } else if (panelEl.dataset.customWidth){
+        applyWidth(parseFloat(panelEl.dataset.customWidth));
+      }
     });
   }
-  wirePanelToggle(document.querySelector('.left-panel'), document.getElementById('toggle-left-panel'), '&#8250;', '&#8249;');
-  wirePanelToggle(document.querySelector('.sidebar'), document.getElementById('toggle-sidebar'), '&#8249;', '&#8250;');
+  wirePanelResizer(document.querySelector('.left-panel'), document.getElementById('toggle-left-panel'), 'left', '&#8250;', '&#8249;', 200, 460);
+  wirePanelResizer(document.querySelector('.sidebar'), document.getElementById('toggle-sidebar'), 'right', '&#8249;', '&#8250;', 240, 520);
+
+  // Mobile: start with both drawers tucked away so the map is the primary view: the
+  // arrow handles remain in place to pull either one open.
+  if (window.innerWidth <= 860){
+    Array.prototype.forEach.call(document.querySelectorAll('.left-panel,.sidebar'), function(panel){
+      panel.classList.add('collapsed');
+    });
+    var leftBtn = document.getElementById('toggle-left-panel'), rightBtn = document.getElementById('toggle-sidebar');
+    leftBtn.classList.add('collapsed'); leftBtn.innerHTML = '&#8250;';
+    rightBtn.classList.add('collapsed'); rightBtn.innerHTML = '&#8249;';
+  }
 
   renderChartSelect();
   renderNodeLegend();
@@ -2689,14 +3767,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
   renderEconDashboard();
 
   initMedinaMarkers();
+  initMedinaOriginMarkers();
   initMedinaRoutePaths();
   renderMedinaSiteList();
-  wireMedinaRowDelegation(document.getElementById('medina-site-list'));
   populateMedinaBookingForm();
   wireMedinaBookingForm();
-  renderMedinaSiteDetail();
-  renderMedinaOperatorTable();
-  renderMedinaBookingsTable();
+  renderMedinaDetail();
+  updateMedinaLive();
 
   // ---------------- Language toggle ----------------
   // Rebuilds everything that JS built once at init (names/labels aren't otherwise
@@ -2739,7 +3816,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // show/hide the two cities' panels. tick() below skips Fukui's simulation loop
   // entirely while CITY !== 'fukui', so nothing keeps computing/animating off-screen.
   var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer];
-  var MEDINA_MAP_LAYERS = [medinaMarkerLayer, medinaRouteLayer];
+  var MEDINA_MAP_LAYERS = [medinaMarkerLayer, medinaRouteLayer, medinaBusRouteLayer];
   function setCity(city){
     CITY = city;
     document.documentElement.setAttribute('data-city', city);
@@ -2750,6 +3827,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       FUKUI_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
       MEDINA_MAP_LAYERS.forEach(function(l){ if (!map.hasLayer(l)) map.addLayer(l); });
       map.fitBounds(MEDINA_BOUNDS);
+      updateMedinaLive();
     } else {
       MEDINA_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
       FUKUI_MAP_LAYERS.forEach(function(l){ if (!map.hasLayer(l)) map.addLayer(l); });
@@ -2968,6 +4046,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   setTimeout(function(){ requestAnimationFrame(tick); }, 60);
 
+  // This copy of the demo defaults to the Madinah view (served at /medina/); the
+  // toggle above still switches back to Fukui like the root copy does. setCity()
+  // handles every side effect of the switch itself (data-city attribute, map layers,
+  // bounds, button state, view tabs), so calling it once here is enough -- no need
+  // to hand-edit the initial button/attribute markup separately and risk it drifting
+  // out of sync with this call.
+  setCity('medina');
 
 })();
 </script>
