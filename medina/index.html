@@ -844,6 +844,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .mbooking-info .code{font-family:ui-monospace,monospace;font-weight:800;color:var(--ink-1);font-size:13px;}
 
   .play-btn.aqua{background:var(--aqua);}
+  .medina-adv-controls{margin-top:8px;}
+  .medina-adv-controls summary{font-size:10.5px;color:#9aa4b2;cursor:pointer;user-select:none;}
+  .medina-adv-controls summary:hover{color:#d7dde5;}
+  .medina-adv-controls[open] summary{color:#d7dde5;margin-bottom:2px;}
   .timeline-slider.aqua::-webkit-slider-thumb{border-color:var(--aqua);}
   .timeline-slider.aqua::-moz-range-thumb{border-color:var(--aqua);}
   .mbus-icon{font-size:30px;line-height:38px;text-align:center;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
@@ -1040,7 +1044,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       </div>
       <div class="medina-only">
         <h1>Madinah Heritage Sites: DHDE Tourism-Flow Concept Demo</h1>
-        <p>University of Fukui, Headquarters for Regional Revitalization · with Taibah University, College of Engineering (Madinah) · Sakura Science Program, academic tourism-research collaboration</p>
+        <p>University of Fukui, Headquarters for Regional Revitalization · with Taibah University, College of Engineering (Madinah)</p>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
@@ -1160,16 +1164,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div class="timeline-bar medina-only">
           <div class="timeline-top">
             <button class="play-btn aqua" id="medina-play-btn" title="Play / pause the simulated visiting day">&#9654;</button>
-            <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="0" step="1" />
-            <div class="speed-btns" id="medina-speed-btns">
-              <button class="speed-btn active" data-speed="0.4">0.4×</button>
-              <button class="speed-btn" data-speed="1">1×</button>
-              <button class="speed-btn" data-speed="2">2×</button>
-            </div>
-            <button class="speed-btn" id="medina-reset-btn" title="Reset to 7:00 AM">&#8634; Reset</button>
+            <div class="timeline-caption" id="medina-timeline-caption" style="flex:1;margin-top:0;">A single day at the sites &middot; press play to watch it unfold</div>
           </div>
-          <div class="timeline-caption" id="medina-timeline-caption">7:00 AM · simulated visiting day (7:00 AM to 6:00 PM)</div>
           <button type="button" class="mform-submit" id="medina-demo-btn" style="width:100%;margin-top:8px;background:var(--aqua);">🎬 Generate demo traffic (no booking needed, plays automatically)</button>
+          <details class="medina-adv-controls">
+            <summary>Advanced: scrub the timeline manually</summary>
+            <div class="timeline-top" style="margin-top:8px;">
+              <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="45" step="1" />
+              <div class="speed-btns" id="medina-speed-btns">
+                <button class="speed-btn active" data-speed="0.4">0.4×</button>
+                <button class="speed-btn" data-speed="1">1×</button>
+                <button class="speed-btn" data-speed="2">2×</button>
+              </div>
+              <button class="speed-btn" id="medina-reset-btn" title="Reset to 7:00 AM">&#8634; Reset</button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -3181,6 +3190,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 
   // ---------------- Medina simulated-day clock + bus tracking ----------------
+  var MEDINA_DEFAULT_T = 0.45; // resting "single day" snapshot the page loads to and Reset returns to -- not 7am, so the first look already shows a normal, lively day rather than an empty one
   var MEDINA_DAY_START_MIN = 420;   // 7:00am
   var MEDINA_DAY_END_MIN = 1080;    // 6:00pm
   var MEDINA_DAY_SPAN_MIN = MEDINA_DAY_END_MIN - MEDINA_DAY_START_MIN;
@@ -3421,7 +3431,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
   function medinaUpdateClockLabel(){
     var el = document.getElementById('medina-timeline-caption');
-    if (el) el.textContent = medinaMinToClock(medinaCurrentMinute()) + ' · simulated visiting day (7:00 AM to 6:00 PM)';
+    if (el) el.textContent = medinaMinToClock(medinaCurrentMinute()) + ' · a single day at the sites';
   }
   function medinaTick(){
     if (CITY === 'medina'){
@@ -3633,7 +3643,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // ---------------- State & controls ----------------
   var STATE = { t:0, playing:false, scenario:'none', autoReroute:false, rerouteActive:false, _lastRerouteVisual:false,
                 hoverId:null, selectedId:null, freezeOnPause:true, viewMode:'overview',
-                medinaSelectedId:null, medinaHoverId:null, medinaT:0, medinaPlaying:false, medinaWeather:'clear' };
+                medinaSelectedId:null, medinaHoverId:null, medinaT:MEDINA_DEFAULT_T, medinaPlaying:false, medinaWeather:'clear' };
   var slider = document.getElementById('timeline-slider');
   var playBtn = document.getElementById('play-btn');
   var caption = document.getElementById('timeline-caption');
@@ -3664,9 +3674,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
     updateMedinaLive();
   });
   medinaResetBtn.addEventListener('click', function(){
-    STATE.medinaT = 0;
+    STATE.medinaT = MEDINA_DEFAULT_T;
     STATE.medinaPlaying = false;
-    medinaSlider.value = 0;
+    medinaSlider.value = Math.round(MEDINA_DEFAULT_T*100);
     medinaUpdatePlayBtn();
     medinaUpdateClockLabel();
     updateMedinaLive();
