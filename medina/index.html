@@ -730,6 +730,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .city-btn{font-size:11.5px;font-weight:800;letter-spacing:.2px;padding:5px 11px;border-radius:7px;border:none;background:transparent;color:#8b93a1;cursor:pointer;}
   .city-btn.active{background:#2a3441;color:#f5f4f0;}
   .city-btn:focus-visible{outline:2px solid #f5d100;outline-offset:2px;}
+  /* Visually identical copy of .city-switch/.city-btn for the Demo/Manual toggle --
+     a SEPARATE class on purpose: setCity()'s global `.city-btn` queries (toggling
+     .active by data-city, and wiring clicks to setCity(btn.dataset.city)) would
+     otherwise also catch these buttons, since they share no container scoping. */
+  .mode-switch{display:flex;gap:2px;background:#15181f;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:2px;}
+  .mode-btn{font-size:11.5px;font-weight:800;letter-spacing:.2px;padding:5px 11px;border-radius:7px;border:none;background:transparent;color:#8b93a1;cursor:pointer;}
+  .mode-btn.active{background:#2a3441;color:#f5f4f0;}
+  .mode-btn:focus-visible{outline:2px solid #f5d100;outline-offset:2px;}
   .cluster-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:2px;}
   .cap-chip{font-size:9.5px;padding:2px 6px;border-radius:10px;background:rgba(11,11,11,0.06);color:var(--ink-muted);white-space:nowrap;flex-shrink:0;}
   .mform{display:flex;flex-direction:column;gap:9px;}
@@ -1166,9 +1174,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
             <button class="play-btn aqua" id="medina-play-btn" title="Play / pause the simulated visiting day">&#9654;</button>
             <div class="timeline-caption" id="medina-timeline-caption" style="flex:1;margin-top:0;">A single day at the sites &middot; press play to watch it unfold</div>
           </div>
-          <button type="button" class="mform-submit" id="medina-demo-btn" style="width:100%;margin-top:8px;background:var(--aqua);">🎬 Generate demo traffic (no booking needed, plays automatically)</button>
+          <div id="medina-mode-toggle" class="mode-switch" role="group" aria-label="Demo traffic or manual booking mode" style="margin-top:8px;">
+            <button type="button" class="mode-btn active" data-mode="demo" title="Auto-populated illustrative traffic">🎬 Demo</button>
+            <button type="button" class="mode-btn" data-mode="manual" title="Empty board — add bookings yourself via the form">✍️ Manual</button>
+          </div>
           <details class="medina-adv-controls">
-            <summary>Advanced: scrub the timeline manually</summary>
+            <summary>Advanced: jump to a specific time</summary>
             <div class="timeline-top" style="margin-top:8px;">
               <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="45" step="1" />
               <div class="speed-btns" id="medina-speed-btns">
@@ -1176,7 +1187,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
                 <button class="speed-btn" data-speed="1">1×</button>
                 <button class="speed-btn" data-speed="2">2×</button>
               </div>
-              <button class="speed-btn" id="medina-reset-btn" title="Reset to 7:00 AM">&#8634; Reset</button>
+              <button class="speed-btn" id="medina-reset-btn" title="Reset to the default snapshot">&#8634; Reset</button>
             </div>
           </details>
         </div>
@@ -2949,9 +2960,18 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // cluster ("half") trips, and quick single-site visits, from every starting point,
   // some deliberately oversized so the capacity split in medinaPlanBooking visibly
   // kicks in. Meant to be played back with the timeline's play button.
-  function medinaGenerateDemoDay(){
+  // Pure data population -- no play-state/slider/toast side effects, so it's safe to
+  // call both at page init (silently, before the first paint) and from the Demo/Manual
+  // mode toggle (medinaSetMode below). Depends on #mb-date already having a value,
+  // which populateMedinaBookingForm() guarantees before either call site runs.
+  function medinaSeedDemoBookings(){
     medinaClearAllBookings();
-    STATE.medinaT = 0; STATE.medinaPlaying = false;
+    // Plan every request as if the day were just starting, regardless of where the
+    // resting clock (MEDINA_DEFAULT_T) is set to display -- otherwise seeding at, say,
+    // noon would see the demo's 8-11am slots as already "in the past" and silently
+    // drop most of the 13 requests (medinaPlanBooking only offers future slots).
+    var savedT = STATE.medinaT;
+    STATE.medinaT = 0;
     var dateInput = document.getElementById('mb-date');
     var date = dateInput.value;
     var reqs = [
@@ -2976,16 +2996,41 @@ svg.leaflet-image-layer.leaflet-interactive path {
         coaches: req.coaches, groupSize: req.coaches*MEDINA_PAX_PER_GROUP, guide: req.guide
       });
     });
+    STATE.medinaT = savedT;
     renderMedinaMyBookings();
     renderMedinaBookingsTable();
     renderMedinaCapacityCards();
     renderMedinaSlotGrid();
-    STATE.medinaPlaying = true;
-    var slider = document.getElementById('medina-timeline-slider'); if (slider) slider.value = 0;
+    return reqs.length;
+  }
+
+  // Demo (auto-populated, illustrative traffic) vs Manual (empty board, build your own
+  // via the form) -- see #medina-mode-toggle. Switching mode never auto-starts
+  // playback; only the Play button does that, per the brief that population should be
+  // instant but play stays the deliberate trigger.
+  function medinaSetMode(mode){
+    if (mode === STATE.medinaMode) return;
+    STATE.medinaMode = mode;
+    Array.prototype.forEach.call(document.querySelectorAll('#medina-mode-toggle .mode-btn'), function(b){
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+    STATE.medinaPlaying = false;
+    var count = 0;
+    if (mode === 'manual'){
+      medinaClearAllBookings();
+      renderMedinaMyBookings(); renderMedinaBookingsTable(); renderMedinaCapacityCards(); renderMedinaSlotGrid();
+      STATE.medinaT = 0;
+    } else {
+      count = medinaSeedDemoBookings();
+      STATE.medinaT = MEDINA_DEFAULT_T;
+    }
+    var slider = document.getElementById('medina-timeline-slider');
+    if (slider) slider.value = Math.round(STATE.medinaT*100);
     medinaUpdatePlayBtn(); medinaUpdateClockLabel(); updateMedinaLive();
-    document.getElementById('medina-confirmation').innerHTML =
-      '<div class="route-preview">Demo traffic generated: '+reqs.length+' reservations from '+MEDINA_ORIGINS.length+' starting points, some deliberately oversized so you can watch a group split across slots/sites. Playing the simulated day now, watch the map.</div>';
-    medinaShowToast('🎬 Demo traffic generated: '+reqs.length+' reservations. Playing now.');
+    document.getElementById('medina-confirmation').innerHTML = '';
+    medinaShowToast(mode === 'demo'
+      ? '🎬 Demo traffic loaded (' + count + ' reservations). Press play to watch the day unfold.'
+      : '✍️ Manual mode: board cleared. Add reservations with the form below.');
   }
 
   function wireMedinaBookingForm(){
@@ -3038,6 +3083,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       renderMedinaMyBookings();
       renderMedinaBookingsTable();
       renderMedinaCapacityCards();
+      if (STATE.medinaPlaying) medinaShowToast('🚌 Added to the live simulation — '+groupCode+' will appear on the map at its scheduled time.');
     });
     document.getElementById('medina-clear-bookings').addEventListener('click', function(){
       medinaClearAllBookings();
@@ -3643,7 +3689,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // ---------------- State & controls ----------------
   var STATE = { t:0, playing:false, scenario:'none', autoReroute:false, rerouteActive:false, _lastRerouteVisual:false,
                 hoverId:null, selectedId:null, freezeOnPause:true, viewMode:'overview',
-                medinaSelectedId:null, medinaHoverId:null, medinaT:MEDINA_DEFAULT_T, medinaPlaying:false, medinaWeather:'clear' };
+                medinaSelectedId:null, medinaHoverId:null, medinaT:MEDINA_DEFAULT_T, medinaPlaying:false, medinaWeather:'clear', medinaMode:'demo' };
   var slider = document.getElementById('timeline-slider');
   var playBtn = document.getElementById('play-btn');
   var caption = document.getElementById('timeline-caption');
@@ -3688,8 +3734,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
       Array.prototype.forEach.call(document.querySelectorAll('#medina-speed-btns .speed-btn'), function(b){ b.classList.toggle('active', b===btn); });
     });
   });
-  var medinaDemoBtn = document.getElementById('medina-demo-btn');
-  if (medinaDemoBtn) medinaDemoBtn.addEventListener('click', medinaGenerateDemoDay);
+  var medinaModeToggle = document.getElementById('medina-mode-toggle');
+  if (medinaModeToggle){
+    Array.prototype.forEach.call(medinaModeToggle.querySelectorAll('.mode-btn'), function(btn){
+      btn.addEventListener('click', function(){ medinaSetMode(btn.dataset.mode); });
+    });
+  }
 
   // Playback speed control -- default loop slowed down from the original ~26s/loop.
   var speedMultiplier = 1;
@@ -3783,6 +3833,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   populateMedinaBookingForm();
   wireMedinaBookingForm();
   renderMedinaDetail();
+  medinaSeedDemoBookings();
   updateMedinaLive();
 
   // ---------------- Language toggle ----------------
