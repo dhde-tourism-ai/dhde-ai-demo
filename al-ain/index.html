@@ -1226,6 +1226,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <button type="button" class="mbase-btn" data-basemap="hybrid" title="Satellite + labels"><span class="men">Hybrid</span><span class="mar">هجين</span></button>
           <button type="button" class="mbase-btn" data-basemap="light" title="Light view"><span class="men">Light</span><span class="mar">فاتح</span></button>
         </div>
+        <div id="fukui-basemap-switch" class="mbasemap-switch fukui-only" role="group" aria-label="Map view">
+          <button type="button" class="mbase-btn" data-basemap="dark" title="Dark terrain view"><span class="en">Dark</span><span class="ja">ダーク</span></button>
+          <button type="button" class="mbase-btn" data-basemap="hybrid" title="Satellite + labels"><span class="en">Hybrid</span><span class="ja">ハイブリッド</span></button>
+          <button type="button" class="mbase-btn active" data-basemap="light" title="Light view"><span class="en">Light</span><span class="ja">ライト</span></button>
+        </div>
         <div id="medina-weather-fx" class="medina-weather-fx medina-only" aria-hidden="true">
           <div class="medina-cloud" style="top:4%;width:360px;height:120px;animation-duration:40s;animation-delay:0s;"></div>
           <div class="medina-cloud" style="top:18%;width:230px;height:85px;animation-duration:55s;animation-delay:-18s;"></div>
@@ -2256,6 +2261,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // seen in production. Swapped to Esri's free, no-signup "Light Gray Canvas" basemap,
   // which is the closest key-free equivalent to CARTO Positron's light, low-contrast
   // style (base + a separate label/reference layer on top, same visual result).
+  // Shown immediately so there's no blank map before the rest of the script runs;
+  // setCity() removes these two one time (they're not tracked in any *_MAP_LAYERS
+  // array) the first time it fires, handing over to the managed FUKUI_BASEMAPS
+  // switcher (Dark/Hybrid/Light) defined further down, next to Medina's/Al Ain's.
   var fukuiBaseTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom: 16
   }).addTo(map);
@@ -4079,6 +4088,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
       btn.addEventListener('click', function(){ alainSetBasemap(btn.dataset.basemap); });
     });
   }
+  var fukuiBasemapSwitch = document.getElementById('fukui-basemap-switch');
+  if (fukuiBasemapSwitch){
+    Array.prototype.forEach.call(fukuiBasemapSwitch.querySelectorAll('.mbase-btn'), function(btn){
+      btn.addEventListener('click', function(){ fukuiSetBasemap(btn.dataset.basemap); });
+    });
+  }
 
   // Playback speed control -- default loop slowed down from the original ~26s/loop.
   var speedMultiplier = 1;
@@ -4359,6 +4374,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
       b.classList.toggle('active', b.dataset.basemap === key);
     });
   }
+  var FUKUI_BASEMAPS = MEDINA_BASEMAPS; // same tile services, city-agnostic -- reuse rather than duplicate
+  var fukuiActiveBasemap = 'light'; // matches the original always-on light-gray canvas, so Fukui's default look is unchanged
+  function fukuiSetBasemap(key){
+    if (!FUKUI_BASEMAPS[key]) return;
+    Object.keys(FUKUI_BASEMAPS).forEach(function(k){ if (map.hasLayer(FUKUI_BASEMAPS[k])) map.removeLayer(FUKUI_BASEMAPS[k]); });
+    fukuiActiveBasemap = key;
+    FUKUI_BASEMAPS[key].addTo(map);
+    Array.prototype.forEach.call(document.querySelectorAll('#fukui-basemap-switch .mbase-btn'), function(b){
+      b.classList.toggle('active', b.dataset.basemap === key);
+    });
+  }
 
   var alainSiteMarkers = {}, alainGatewayMarkers = {};
   function alainPopupHtml(s){
@@ -4566,7 +4592,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // Swaps map layers + bounds and lets the fukui-only/medina-only CSS (see <style>)
   // show/hide the two cities' panels. tick() below skips Fukui's simulation loop
   // entirely while CITY !== 'fukui', so nothing keeps computing/animating off-screen.
-  var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer, fukuiBaseTile, fukuiRefTile];
+  var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer];
   var MEDINA_MAP_LAYERS = [medinaMarkerLayer, medinaRouteLayer, medinaBusRouteLayer];
   function setCity(city){
     CITY = city;
@@ -4574,11 +4600,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
     Array.prototype.forEach.call(document.querySelectorAll('.city-btn'), function(b){
       b.classList.toggle('active', b.dataset.city === city);
     });
+    if (map.hasLayer(fukuiBaseTile)) map.removeLayer(fukuiBaseTile); // one-time: hands off to FUKUI_BASEMAPS below
+    if (map.hasLayer(fukuiRefTile)) map.removeLayer(fukuiRefTile);
     FUKUI_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
     MEDINA_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
     ALAIN_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
     Object.keys(MEDINA_BASEMAPS).forEach(function(k){ if (map.hasLayer(MEDINA_BASEMAPS[k])) map.removeLayer(MEDINA_BASEMAPS[k]); });
     Object.keys(ALAIN_BASEMAPS).forEach(function(k){ if (map.hasLayer(ALAIN_BASEMAPS[k])) map.removeLayer(ALAIN_BASEMAPS[k]); });
+    Object.keys(FUKUI_BASEMAPS).forEach(function(k){ if (map.hasLayer(FUKUI_BASEMAPS[k])) map.removeLayer(FUKUI_BASEMAPS[k]); });
     if (city === 'medina'){
       MEDINA_MAP_LAYERS.forEach(function(l){ map.addLayer(l); });
       medinaSetBasemap(medinaActiveBasemap);
@@ -4591,6 +4620,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       updateAlainLive();
     } else {
       FUKUI_MAP_LAYERS.forEach(function(l){ map.addLayer(l); });
+      fukuiSetBasemap(fukuiActiveBasemap);
       map.fitBounds(FUKUI_BOUNDS);
     }
     renderViewTabs();
