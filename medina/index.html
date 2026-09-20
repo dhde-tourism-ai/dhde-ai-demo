@@ -1237,16 +1237,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div class="timeline-bar medina-only">
           <div class="timeline-top">
             <button class="play-btn aqua" id="medina-play-btn" title="Play / pause the simulated visiting day">&#9654;</button>
-            <div class="timeline-caption" id="medina-timeline-caption" style="flex:1;margin-top:0;"><span class="men">A single day at the sites &middot; press play to watch it unfold</span><span class="mar">يوم واحد في المواقع &middot; اضغط تشغيل لمشاهدته</span></div>
+            <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="45" step="1" />
           </div>
+          <div class="timeline-caption" id="medina-timeline-caption"><span class="men">A single day at the sites &middot; press play to watch it unfold</span><span class="mar">يوم واحد في المواقع &middot; اضغط تشغيل لمشاهدته</span></div>
           <div id="medina-mode-toggle" class="mode-switch" role="group" aria-label="Demo traffic or manual booking mode" style="margin-top:8px;">
             <button type="button" class="mode-btn active" data-mode="demo" title="Auto-populated illustrative traffic">🎬 <span class="men">Demo</span><span class="mar">تجريبي</span></button>
             <button type="button" class="mode-btn" data-mode="manual" title="Empty board — add bookings yourself via the form">✍️ <span class="men">Manual</span><span class="mar">يدوي</span></button>
           </div>
           <details class="medina-adv-controls">
-            <summary><span class="men">Advanced: jump to a specific time</span><span class="mar">متقدم: الانتقال إلى وقت محدد</span></summary>
+            <summary><span class="men">Advanced: playback speed &amp; reset</span><span class="mar">متقدم: سرعة التشغيل وإعادة الضبط</span></summary>
             <div class="timeline-top" style="margin-top:8px;">
-              <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="45" step="1" />
               <div class="speed-btns" id="medina-speed-btns">
                 <button class="speed-btn" data-speed="0.4">0.4×</button>
                 <button class="speed-btn" data-speed="1">1×</button>
@@ -1661,7 +1661,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
     { id:'haram',    label:'Al-Haram hotel district (Masjid an-Nabawi)', labelAr:'حي الحرم الفندقي (المسجد النبوي)', icon:'🕌', lat:24.4672, lng:39.6112 },
     { id:'quba-hotels', label:'Quba district hotels', labelAr:'فنادق حي قباء', icon:'🏨', lat:24.4430, lng:39.6165 },
     { id:'airport-rd', label:'Airport Road hotel district', labelAr:'حي فنادق طريق المطار', icon:'🏨', lat:24.4970, lng:39.6540 },
-    { id:'airport',  label:'Prince Mohammad Bin Abdulaziz Airport (MED)', labelAr:'مطار الأمير محمد بن عبدالعزيز', icon:'✈️', lat:24.5536, lng:39.7051 }
+    { id:'airport',  label:'Prince Mohammad Bin Abdulaziz Airport (MED)', labelAr:'مطار الأمير محمد بن عبدالعزيز', icon:'✈️', lat:24.5536, lng:39.7051 },
+    { id:'rail-station', label:'Haramain High-Speed Rail Station', labelAr:'محطة قطار الحرمين السريع', icon:'🚄', lat:24.4531, lng:39.6607 },
+    { id:'bus-terminal', label:'Central bus station (coach terminal)', labelAr:'محطة الحافلات المركزية', icon:'🚌', lat:24.4785, lng:39.5751 },
+    { id:'markaziya', label:'Markaziya (central district) hotels', labelAr:'فنادق المنطقة المركزية', icon:'🏨', lat:24.4715, lng:39.6055 },
+    { id:'taibah-u', label:'Taibah University (Al-Jamiah campus)', labelAr:'جامعة طيبة (الحرم الجامعي)', icon:'🎓', lat:24.5247, lng:39.5952 }
   ];
   var MEDINA_ORIGIN_BY_ID = {}; MEDINA_ORIGINS.forEach(function(o){ MEDINA_ORIGIN_BY_ID[o.id]=o; });
 
@@ -2861,7 +2865,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         MEDINA_SITES.map(function(s){ return '<option value="site:'+s.id+'">'+s.num+'. '+s.nameEn+'</option>'; }).join('')+
         '</optgroup>';
       sel.innerHTML = groups;
-      originSel.innerHTML = MEDINA_ORIGINS.map(function(o){ return '<option value="'+o.id+'">'+o.icon+' '+o.label+'</option>'; }).join('');
+      originSel.innerHTML = MEDINA_ORIGINS.map(function(o){ return '<option value="'+o.id+'">'+o.icon+' '+mbi(o.label, o.labelAr)+'</option>'; }).join('');
       sel.addEventListener('change', function(){ renderMedinaBookSummary(); renderMedinaSlotGrid(); renderMedinaRoutePreview(); });
       originSel.addEventListener('change', renderMedinaRoutePreview);
       var dateInput = document.getElementById('mb-date');
