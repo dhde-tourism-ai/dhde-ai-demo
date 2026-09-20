@@ -699,7 +699,33 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --good:#00a79d;
     --header-bg:#0a2a2f;
     --orange:#c99a3b;
+    /* Nusuk-app-style palette: deep green surfaces, white text -- every component that
+       reads var(--surface-1)/var(--ink-1) etc. re-colors automatically, same mechanism
+       as --aqua above. Header keeps its own dark teal (--header-bg), unchanged. */
+    --surface-1:#0e3b2e;
+    --surface-2:#0b2f24;
+    --ink-1:#ffffff;
+    --ink-2:#cfe8dc;
+    --ink-muted:#8fb8a8;
+    --grid:rgba(255,255,255,0.14);
+    --baseline:rgba(255,255,255,0.28);
+    --border:rgba(255,255,255,0.18);
   }
+  /* A handful of boxes hardcode background:#fff instead of reading var(--surface-1), so
+     the override above doesn't reach them on its own -- scoped fixes for those here. */
+  html[data-city="medina"] .mform input,
+  html[data-city="medina"] .mform select,
+  html[data-city="medina"] .msite-card,
+  html[data-city="medina"] .mdetail,
+  html[data-city="medina"] .slot-chip,
+  html[data-city="medina"] .scenario-btn,
+  html[data-city="medina"] .signoff-btn{
+    background:var(--surface-1); color:var(--ink-1);
+  }
+  html[data-city="medina"] .slot-chip.full,
+  html[data-city="medina"] .slot-chip.past{ background:var(--surface-2); color:var(--ink-muted); }
+  html[data-city="medina"] .scenario-btn:hover{ background:var(--surface-2); }
+  html[data-city="medina"] .scenario-btn.active{ background:var(--critical); border-color:var(--critical); color:#fff; }
   html[data-city="medina"] body{ font-family:'Cairo',system-ui,-apple-system,"Segoe UI",sans-serif; }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--surface-2);color:var(--ink-1);}
@@ -1005,6 +1031,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .map-legend .row:last-child{margin-bottom:0;}
   .map-legend .swatch2{display:inline-block;width:9px;height:9px;border-radius:50%;}
 
+  .mbasemap-switch{position:absolute;left:12px;top:12px;z-index:500;display:flex;gap:2px;background:rgba(10,20,20,0.72);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:3px;box-shadow:0 2px 10px rgba(0,0,0,0.25);}
+  .mbase-btn{font-size:11px;font-weight:700;letter-spacing:.2px;padding:5px 9px;border-radius:6px;border:none;background:transparent;color:#c9d4d1;cursor:pointer;}
+
+  /* Rain/storm overlay: drifting cloud shadows (pure CSS) + a canvas of falling
+     droplets drawn in medinaRenderWeatherFx (see medinaTick). Sits above the map tiles
+     but below the floating UI chrome (z:500+), and pointer-events:none throughout so it
+     never blocks a click. Only .active while STATE.medinaWeather isn't 'clear'. */
+  .medina-weather-fx{position:absolute;inset:0;z-index:480;pointer-events:none;overflow:hidden;display:none;}
+  .medina-weather-fx.active{display:block;}
+  .medina-weather-fx canvas{position:absolute;inset:0;width:100%;height:100%;}
+  .medina-cloud{position:absolute;left:0;width:300px;height:100px;border-radius:50%;background:radial-gradient(ellipse at center, rgba(255,255,255,0.30), rgba(255,255,255,0) 72%);filter:blur(3px);opacity:0.6;transform:translateX(-40%);animation:medina-cloud-drift linear infinite;}
+  .medina-weather-fx.storm .medina-cloud{background:radial-gradient(ellipse at center, rgba(20,26,32,0.55), rgba(20,26,32,0) 72%);opacity:0.8;}
+  @keyframes medina-cloud-drift{ from{transform:translateX(-40%);} to{transform:translateX(140%);} }
+  .mbase-btn.active{background:var(--aqua);color:#fff;}
+
   table.node-table{width:100%;border-collapse:collapse;font-size:12px;}
   table.node-table th{text-align:left;color:var(--ink-muted);font-weight:700;padding:6px 4px;border-bottom:1px solid var(--grid);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;}
   table.node-table td{padding:7px 4px;border-bottom:1px solid var(--grid);color:var(--ink-2);vertical-align:top;}
@@ -1162,6 +1203,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <div class="map-column">
       <div id="map">
+        <div id="medina-basemap-switch" class="mbasemap-switch medina-only" role="group" aria-label="Map view">
+          <button type="button" class="mbase-btn active" data-basemap="dark" title="Dark terrain view"><span class="men">Dark</span><span class="mar">داكن</span></button>
+          <button type="button" class="mbase-btn" data-basemap="hybrid" title="Satellite + labels"><span class="men">Hybrid</span><span class="mar">هجين</span></button>
+          <button type="button" class="mbase-btn" data-basemap="light" title="Light view"><span class="men">Light</span><span class="mar">فاتح</span></button>
+        </div>
+        <div id="medina-weather-fx" class="medina-weather-fx medina-only" aria-hidden="true">
+          <div class="medina-cloud" style="top:4%;width:360px;height:120px;animation-duration:40s;animation-delay:0s;"></div>
+          <div class="medina-cloud" style="top:18%;width:230px;height:85px;animation-duration:55s;animation-delay:-18s;"></div>
+          <div class="medina-cloud" style="top:34%;width:290px;height:100px;animation-duration:48s;animation-delay:-32s;"></div>
+          <canvas id="medina-rain-canvas"></canvas>
+        </div>
         <div class="timeline-bar fukui-only">
           <div class="timeline-top">
             <button class="play-btn" id="play-btn" title="Play / pause seasonal timeline">&#9654;</button>
@@ -1196,9 +1248,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
             <div class="timeline-top" style="margin-top:8px;">
               <input type="range" class="timeline-slider aqua" id="medina-timeline-slider" min="0" max="100" value="45" step="1" />
               <div class="speed-btns" id="medina-speed-btns">
-                <button class="speed-btn active" data-speed="0.4">0.4×</button>
+                <button class="speed-btn" data-speed="0.4">0.4×</button>
                 <button class="speed-btn" data-speed="1">1×</button>
-                <button class="speed-btn" data-speed="2">2×</button>
+                <button class="speed-btn active" data-speed="2">2×</button>
               </div>
               <button class="speed-btn" id="medina-reset-btn" title="Reset to the default snapshot">&#8634; Reset</button>
             </div>
@@ -1857,10 +1909,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
     return 'https://router.project-osrm.org/route/v1/driving/'+routeDef.from[1]+','+routeDef.from[0]+';'+routeDef.to[1]+','+routeDef.to[0]+'?geometries=geojson&overview=full';
   }
 
-  function fetchRealRoad(routeDef){
+  function fetchRealRoadOnce(routeDef){
     if (typeof fetch !== 'function') return Promise.resolve(null);
     var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timer = setTimeout(function(){ if (controller) controller.abort(); }, 4500);
+    var timer = setTimeout(function(){ if (controller) controller.abort(); }, 6000);
     return fetch(osrmUrl(routeDef), controller ? {signal:controller.signal} : {})
       .then(function(res){ return res.ok ? res.json() : null; })
       .then(function(data){
@@ -1871,6 +1923,37 @@ svg.leaflet-image-layer.leaflet-interactive path {
         return coords.map(function(c){ return [c[1], c[0]]; });
       })
       .catch(function(){ clearTimeout(timer); return null; });
+  }
+  // The free public OSRM demo server used above throttles/drops requests when too many
+  // arrive at once -- exactly what happens when Fukui's ~15 routes and Medina's ~13
+  // bookings' worth of legs all fire their upgrade fetch in the same tick, which is why
+  // legs were silently staying on their bezier-curve placeholder instead of upgrading to
+  // real road geometry. Queue every call through a small fixed-concurrency pool with one
+  // retry on failure so most legs get a real answer instead of racing each other.
+  var ROAD_FETCH_CONCURRENCY = 3;
+  var roadFetchQueue = [];
+  var roadFetchActive = 0;
+  function roadFetchDrain(){
+    while (roadFetchActive < ROAD_FETCH_CONCURRENCY && roadFetchQueue.length){
+      (function(job){
+        roadFetchActive++;
+        fetchRealRoadOnce(job.routeDef).then(function(path){
+          roadFetchActive--;
+          if (!path && job.retriesLeft > 0){
+            roadFetchQueue.push({ routeDef: job.routeDef, retriesLeft: job.retriesLeft-1, resolve: job.resolve });
+          } else {
+            job.resolve(path);
+          }
+          roadFetchDrain();
+        });
+      })(roadFetchQueue.shift());
+    }
+  }
+  function fetchRealRoad(routeDef){
+    return new Promise(function(resolve){
+      roadFetchQueue.push({ routeDef: routeDef, retriesLeft: 1, resolve: resolve });
+      roadFetchDrain();
+    });
   }
 
   function initRoutePaths(){
@@ -2132,10 +2215,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // seen in production. Swapped to Esri's free, no-signup "Light Gray Canvas" basemap,
   // which is the closest key-free equivalent to CARTO Positron's light, low-contrast
   // style (base + a separate label/reference layer on top, same visual result).
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  var fukuiBaseTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom: 16
   }).addTo(map);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  var fukuiRefTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 16
   }).addTo(map);
 
@@ -2289,6 +2372,36 @@ svg.leaflet-image-layer.leaflet-interactive path {
   var medinaRouteLayer = L.layerGroup();
   var medinaBusRouteLayer = L.layerGroup(); // one colored polyline per active booking leg
   var medinaMarkers = {};
+
+  // Medina gets its own basemap choices instead of reusing Fukui's light canvas tiles --
+  // same free, no-signup Esri REST tile services (no API key), just different Esri map
+  // products. Dark Gray Canvas is the default: same tile scheme as the light canvas
+  // Fukui uses, but a dark background with bold light-colored labels. Hybrid layers
+  // satellite imagery under Esri's boundary/label reference overlay.
+  var MEDINA_BASEMAPS = {
+    dark: L.layerGroup([
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom:16 }),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom:16 })
+    ]),
+    hybrid: L.layerGroup([
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri', maxZoom:18 }),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom:18 })
+    ]),
+    light: L.layerGroup([
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom:16 }),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom:16 })
+    ])
+  };
+  var medinaActiveBasemap = 'dark';
+  function medinaSetBasemap(key){
+    if (!MEDINA_BASEMAPS[key]) return;
+    Object.keys(MEDINA_BASEMAPS).forEach(function(k){ if (map.hasLayer(MEDINA_BASEMAPS[k])) map.removeLayer(MEDINA_BASEMAPS[k]); });
+    medinaActiveBasemap = key;
+    MEDINA_BASEMAPS[key].addTo(map);
+    Array.prototype.forEach.call(document.querySelectorAll('#medina-basemap-switch .mbase-btn'), function(b){
+      b.classList.toggle('active', b.dataset.basemap === key);
+    });
+  }
 
   function initMedinaRoutePaths(){
     MEDINA_ROUTE_DEFS.forEach(function(r){
@@ -3025,12 +3138,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
     STATE.medinaT = 0;
     var dateInput = document.getElementById('mb-date');
     var date = dateInput.value;
+    // Spread across as many distinct hourly slots as the fixed MEDINA_TIME_SLOTS grid
+    // allows, so coaches are visibly at different phases (traveling/dwelling/parked) of
+    // the day at any given moment instead of clumping around a couple of shared hours --
+    // the two deliberate same-hour collisions (faqir-well, jabal-ayr) are kept as-is,
+    // since those exist specifically to force a visible capacity split.
     var reqs = [
       { origin:'airport',      value:'route:ALL', slot:'08:00', coaches:2, guide:true  },
       { origin:'haram',        value:'route:A',    slot:'09:00', coaches:3, guide:true  },
-      { origin:'haram',        value:'route:B',    slot:'09:00', coaches:1, guide:false },
+      { origin:'haram',        value:'route:B',    slot:'07:00', coaches:1, guide:false },
       { origin:'quba-hotels',  value:'site:quba',  slot:'08:00', coaches:1, guide:false },
-      { origin:'quba-hotels',  value:'site:qiblatain', slot:'10:00', coaches:2, guide:true },
+      { origin:'quba-hotels',  value:'site:qiblatain', slot:'16:00', coaches:2, guide:true },
       { origin:'airport-rd',   value:'route:A',    slot:'11:00', coaches:2, guide:false },
       { origin:'haram',        value:'site:uhud',  slot:'13:00', coaches:1, guide:true  },
       { origin:'airport',      value:'route:ALL',  slot:'14:00', coaches:1, guide:false },
@@ -3252,6 +3370,70 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 
   // ---------------- Weather & visitor satisfaction tab ----------------
+  // Rain/storm visual overlay: a canvas of falling droplets, driven every frame from
+  // medinaTick (so it keeps animating even while paused) purely off STATE.medinaWeather --
+  // no separate show/hide call needed from medinaSetWeather, the next tick just picks it
+  // up. Drop count/speed/tilt scale up for storm vs rain; clears itself back to nothing
+  // once the weather clears.
+  var medinaWeatherCanvas = null, medinaWeatherCtx = null, medinaRainDrops = [];
+  function medinaInitWeatherFx(){
+    medinaWeatherCanvas = document.getElementById('medina-rain-canvas');
+    if (medinaWeatherCanvas) medinaWeatherCtx = medinaWeatherCanvas.getContext('2d');
+  }
+  function medinaSpawnRainDrop(cw, ch, intensity){
+    return {
+      x: Math.random()*cw,
+      y: Math.random()*-ch,
+      len: 9 + Math.random()*12*intensity,
+      speed: 420 + Math.random()*280*intensity,
+      drift: 30*intensity,
+      opacity: 0.22 + Math.random()*0.33
+    };
+  }
+  function medinaRenderWeatherFx(dt){
+    var fxEl = document.getElementById('medina-weather-fx');
+    if (!fxEl) return;
+    if (!medinaWeatherCanvas) medinaInitWeatherFx();
+    if (!medinaWeatherCanvas || !medinaWeatherCtx) return;
+    var w = STATE.medinaWeather;
+    if (w === 'clear'){
+      if (fxEl.classList.contains('active')){
+        fxEl.classList.remove('active','storm');
+        medinaRainDrops.length = 0;
+        medinaWeatherCtx.clearRect(0,0,medinaWeatherCanvas.width,medinaWeatherCanvas.height);
+      }
+      return;
+    }
+    fxEl.classList.add('active');
+    fxEl.classList.toggle('storm', w === 'storm');
+    var mapEl = document.getElementById('map');
+    if (mapEl && (medinaWeatherCanvas.width!==mapEl.clientWidth || medinaWeatherCanvas.height!==mapEl.clientHeight)){
+      medinaWeatherCanvas.width = mapEl.clientWidth;
+      medinaWeatherCanvas.height = mapEl.clientHeight;
+    }
+    var cw = medinaWeatherCanvas.width, ch = medinaWeatherCanvas.height;
+    if (!cw || !ch) return;
+    var intensity = w === 'storm' ? 1.6 : 0.85;
+    var targetCount = w === 'storm' ? 220 : 110;
+    while (medinaRainDrops.length < targetCount) medinaRainDrops.push(medinaSpawnRainDrop(cw, ch, intensity));
+    if (medinaRainDrops.length > targetCount) medinaRainDrops.length = targetCount;
+    var ctx = medinaWeatherCtx;
+    ctx.clearRect(0,0,cw,ch);
+    ctx.strokeStyle = 'rgba(210,230,255,0.6)';
+    ctx.lineWidth = w === 'storm' ? 1.6 : 1.1;
+    var step = Math.min(dt, 0.1); // guard against a huge dt after a tab was backgrounded
+    medinaRainDrops.forEach(function(d){
+      d.y += d.speed*step;
+      d.x += d.drift*step;
+      if (d.y > ch || d.x > cw+20){ d.y = -20; d.x = Math.random()*cw; }
+      ctx.globalAlpha = d.opacity;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - d.drift*0.06, d.y + d.len);
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  }
   function medinaSetWeather(w){
     if (STATE.medinaWeather === w) return;
     STATE.medinaWeather = w;
@@ -3301,7 +3483,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   var MEDINA_DAY_END_MIN = 1080;    // 6:00pm
   var MEDINA_DAY_SPAN_MIN = MEDINA_DAY_END_MIN - MEDINA_DAY_START_MIN;
   var MEDINA_DAY_SECONDS = 300; // wall-clock seconds for one full compressed day at 1x
-  var medinaSpeedMultiplier = 0.4; // default slower, so travel legs are actually watchable
+  var medinaSpeedMultiplier = 2; // default fast enough that the day's traffic reads as lively on first paint
   function medinaCurrentMinute(){ return MEDINA_DAY_START_MIN + STATE.medinaT * MEDINA_DAY_SPAN_MIN; }
   var medinaBusMarkers = {};
   var medinaLegState = {};
@@ -3546,12 +3728,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
       medinaLastTs = now;
       if (STATE.medinaPlaying){
         STATE.medinaT = STATE.medinaT + (dt*medinaSpeedMultiplier)/MEDINA_DAY_SECONDS;
-        if (STATE.medinaT >= 1){ STATE.medinaT = 1; STATE.medinaPlaying = false; medinaUpdatePlayBtn(); }
+        if (STATE.medinaT >= 1){ STATE.medinaT = STATE.medinaT % 1; }
         var slider = document.getElementById('medina-timeline-slider');
         if (slider) slider.value = Math.round(STATE.medinaT*100);
         medinaUpdateClockLabel();
       }
       updateMedinaLive();
+      medinaRenderWeatherFx(dt);
     } else {
       medinaLastTs = null;
     }
@@ -3801,6 +3984,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
       btn.addEventListener('click', function(){ medinaSetMode(btn.dataset.mode); });
     });
   }
+  var medinaBasemapSwitch = document.getElementById('medina-basemap-switch');
+  if (medinaBasemapSwitch){
+    Array.prototype.forEach.call(medinaBasemapSwitch.querySelectorAll('.mbase-btn'), function(btn){
+      btn.addEventListener('click', function(){ medinaSetBasemap(btn.dataset.basemap); });
+    });
+  }
 
   // Playback speed control -- default loop slowed down from the original ~26s/loop.
   var speedMultiplier = 1;
@@ -3974,7 +4163,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // Swaps map layers + bounds and lets the fukui-only/medina-only CSS (see <style>)
   // show/hide the two cities' panels. tick() below skips Fukui's simulation loop
   // entirely while CITY !== 'fukui', so nothing keeps computing/animating off-screen.
-  var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer];
+  var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer, fukuiBaseTile, fukuiRefTile];
   var MEDINA_MAP_LAYERS = [medinaMarkerLayer, medinaRouteLayer, medinaBusRouteLayer];
   function setCity(city){
     CITY = city;
@@ -3985,10 +4174,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
     if (city === 'medina'){
       FUKUI_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
       MEDINA_MAP_LAYERS.forEach(function(l){ if (!map.hasLayer(l)) map.addLayer(l); });
+      medinaSetBasemap(medinaActiveBasemap);
       map.fitBounds(MEDINA_BOUNDS);
       updateMedinaLive();
     } else {
       MEDINA_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
+      Object.keys(MEDINA_BASEMAPS).forEach(function(k){ if (map.hasLayer(MEDINA_BASEMAPS[k])) map.removeLayer(MEDINA_BASEMAPS[k]); });
       FUKUI_MAP_LAYERS.forEach(function(l){ if (!map.hasLayer(l)) map.addLayer(l); });
       map.fitBounds(FUKUI_BOUNDS);
     }
