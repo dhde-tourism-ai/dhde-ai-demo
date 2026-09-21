@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-city="medina"><!-- setCity() re-applies this at startup; set here too so there's no flash of Fukui-mode CSS before the script runs -->
+<html lang="en" data-city="al-ain"><!-- setCity() re-applies this at startup; set here too so there's no flash of Fukui-mode CSS before the script runs -->
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -756,10 +756,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   html[data-mlang="ar"] #medina-lang-toggle .lang-switch-knob{left:2px;}
   .mar{direction:rtl;unicode-bidi:isolate;}
 
-  /* City toggle: html[data-city="medina"] switches the whole app shell over to the
-     Madinah heritage-sites demo. Defaults to Fukui, same convention as the lang toggle. */
+  /* City toggle: html[data-city="medina"|"al-ain"] switches the whole app shell over to
+     that city's demo. Defaults to Fukui, same convention as the lang toggle. Three-way
+     now (Fukui / Medina / Al Ain) -- each city's *-only block is hidden unless its own
+     data-city is active. */
   html:not([data-city="medina"]) .medina-only{display:none !important;}
-  html[data-city="medina"] .fukui-only{display:none !important;}
+  html:not([data-city="al-ain"]) .alain-only{display:none !important;}
+  html[data-city="medina"] .fukui-only,html[data-city="al-ain"] .fukui-only{display:none !important;}
+  html[data-city="medina"] .alain-only,html[data-city="al-ain"] .medina-only{display:none !important;}
   .city-switch{display:flex;gap:2px;background:#15181f;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:2px;}
   .city-btn{font-size:11.5px;font-weight:800;letter-spacing:.2px;padding:5px 11px;border-radius:7px;border:none;background:transparent;color:#8b93a1;cursor:pointer;}
   .city-btn.active{background:#2a3441;color:#f5f4f0;}
@@ -1107,9 +1111,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="badge fukui-only"><span class="en">Prototype for Seattle demo showcase</span><span class="ja">シアトルでのデモ展示用プロトタイプ</span></div>
       <div class="badge medina-only"><span class="men">Concept demo, illustrative data pending Ministry figures</span><span class="mar">عرض تجريبي، بيانات توضيحية بانتظار أرقام الوزارة</span></div>
+      <div class="badge alain-only"><span class="men">Concept demo, illustrative regional-flow data</span><span class="mar">عرض تجريبي، بيانات تدفق إقليمي توضيحية</span></div>
       <div id="city-toggle" class="city-switch" role="group" aria-label="Switch destination">
         <button type="button" class="city-btn" data-city="fukui" title="Fukui / Hokuriku, Japan">🗾 Fukui</button>
-        <button type="button" class="city-btn active" data-city="medina" title="Madinah heritage sites, Saudi Arabia">🕌 Madinah</button>
+        <button type="button" class="city-btn" data-city="medina" title="Madinah heritage sites, Saudi Arabia">🕌 Madinah</button>
+        <button type="button" class="city-btn active" data-city="al-ain" title="Al Ain heritage sites, UAE">🏜️ Al Ain</button>
       </div>
       <div id="lang-toggle" class="lang-switch fukui-only" role="switch" aria-checked="false" tabindex="0" title="Switch language / 言語を切り替え">
         <span class="lang-switch-label lang-switch-ja-label">日本語</span>
@@ -1199,6 +1205,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div class="op-banner" style="margin-top:10px;"><span class="men">🚌 Built for tour operators. Groups arrive 40+ at a time, not solo pilgrims.</span><span class="mar">🚌 مصمم لمشغلي الرحلات. تصل المجموعات ٤٠+ شخصًا في المرة الواحدة، وليس أفرادًا.</span></div>
       </div>
 
+      <div class="alain-only">
+        <h2 style="margin-top:0;"><span class="men">10 heritage sites &amp; hotspots</span><span class="mar">١٠ مواقع تراثية ونقاط جذب</span></h2>
+        <div class="legend-notes"><span class="men">Ambient regional flow, not a booking system &mdash; tap a marker or card to see current visitor estimates.</span><span class="mar">تدفق إقليمي محيطي، وليس نظام حجز &mdash; اضغط على علامة أو بطاقة لعرض تقديرات الزوار الحالية.</span></div>
+        <div id="alain-site-cards" class="msite-cards" style="margin-top:10px;"></div>
+        <div class="op-banner" style="margin-top:10px;"><span class="men">🚗 Dots on the map are illustrative day-trip traffic to/from Abu Dhabi, Dubai, the airport, university and hotel districts.</span><span class="mar">🚗 النقاط على الخريطة تمثل حركة زوار توضيحية من وإلى أبوظبي ودبي والمطار والجامعة والأحياء الفندقية.</span></div>
+      </div>
+
     </aside>
 
     <div class="map-column">
@@ -1207,6 +1220,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <button type="button" class="mbase-btn active" data-basemap="dark" title="Dark terrain view"><span class="men">Dark</span><span class="mar">داكن</span></button>
           <button type="button" class="mbase-btn" data-basemap="hybrid" title="Satellite + labels"><span class="men">Hybrid</span><span class="mar">هجين</span></button>
           <button type="button" class="mbase-btn" data-basemap="light" title="Light view"><span class="men">Light</span><span class="mar">فاتح</span></button>
+        </div>
+        <div id="alain-basemap-switch" class="mbasemap-switch alain-only" role="group" aria-label="Map view">
+          <button type="button" class="mbase-btn active" data-basemap="dark" title="Dark terrain view"><span class="men">Dark</span><span class="mar">داكن</span></button>
+          <button type="button" class="mbase-btn" data-basemap="hybrid" title="Satellite + labels"><span class="men">Hybrid</span><span class="mar">هجين</span></button>
+          <button type="button" class="mbase-btn" data-basemap="light" title="Light view"><span class="men">Light</span><span class="mar">فاتح</span></button>
+        </div>
+        <div id="fukui-basemap-switch" class="mbasemap-switch fukui-only" role="group" aria-label="Map view">
+          <button type="button" class="mbase-btn" data-basemap="dark" title="Dark terrain view"><span class="en">Dark</span><span class="ja">ダーク</span></button>
+          <button type="button" class="mbase-btn" data-basemap="hybrid" title="Satellite + labels"><span class="en">Hybrid</span><span class="ja">ハイブリッド</span></button>
+          <button type="button" class="mbase-btn active" data-basemap="light" title="Light view"><span class="en">Light</span><span class="ja">ライト</span></button>
         </div>
         <div id="medina-weather-fx" class="medina-weather-fx medina-only" aria-hidden="true">
           <div class="medina-cloud" style="top:4%;width:360px;height:120px;animation-duration:40s;animation-delay:0s;"></div>
@@ -1234,6 +1257,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="timeline-caption" id="timeline-caption"></div>
         </div>
         <div class="medina-toasts medina-only" id="medina-toasts"></div>
+        <div class="medina-toasts alain-only" id="alain-toasts"></div>
         <div class="timeline-bar medina-only">
           <div class="timeline-top">
             <button class="play-btn aqua" id="medina-play-btn" title="Play / pause the simulated visiting day">&#9654;</button>
@@ -1255,6 +1279,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
               <button class="speed-btn" id="medina-reset-btn" title="Reset to the default snapshot">&#8634; Reset</button>
             </div>
           </details>
+        </div>
+        <div class="timeline-bar alain-only">
+          <div class="timeline-top">
+            <button class="play-btn aqua" id="alain-play-btn" title="Play / pause the day">&#9654;</button>
+            <input type="range" class="timeline-slider aqua" id="alain-timeline-slider" min="0" max="100" value="50" step="1" />
+          </div>
+          <div class="timeline-caption" id="alain-timeline-caption"><span class="men">Regional visitor flow &middot; press play to watch it unfold</span><span class="mar">تدفق الزوار الإقليمي &middot; اضغط تشغيل لمشاهدته</span></div>
         </div>
       </div>
 
@@ -1447,6 +1478,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div id="medina-satisfaction-rows"></div>
         </div>
       </div>
+
+      <div class="alain-only">
+        <h2 style="margin-top:0;"><span class="men">Season</span><span class="mar">الموسم</span></h2>
+        <div class="card-sub" style="margin:-2px 0 8px 0;"><span class="men">UAE tourism is strongly seasonal &mdash; winter is peak, summer brings a heat advisory for exposed sites.</span><span class="mar">السياحة في الإمارات موسمية بشدة &mdash; الشتاء هو موسم الذروة، بينما يصدر تحذير من الحر في الصيف للمواقع المكشوفة.</span></div>
+        <div class="scenario-btns" id="alain-season-btns"></div>
+        <div id="alain-season-status" style="margin-top:8px;"></div>
+
+        <h2><span class="men">Day of week</span><span class="mar">يوم الأسبوع</span></h2>
+        <div class="card-sub" style="margin:-2px 0 8px 0;"><span class="men">The UAE weekend (Friday/Saturday) brings a visible surge across every site.</span><span class="mar">تشهد عطلة نهاية الأسبوع الإماراتية (الجمعة والسبت) ارتفاعًا ملحوظًا في جميع المواقع.</span></div>
+        <div class="scenario-btns" id="alain-weekend-btns"></div>
+      </div>
     </aside>
   </div>
 </div>
@@ -1492,7 +1534,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   // ---------------- City switch: Fukui (default) or Madinah heritage sites ----------------
   // 'fukui' or 'medina'. Swaps map bounds/layers and panel content; see setCity().
-  var CITY = 'medina'; // this copy (served at /medina/) defaults to Madinah; setCity('medina') below also runs once at startup to apply every side effect of that (map layers, bounds, button/attribute state)
+  var CITY = 'al-ain'; // this copy (served at /al-ain/) defaults to Al Ain; setCity('al-ain') below also runs once at startup to apply every side effect of that (map layers, bounds, button/attribute state)
 
   // Madinah's 10 heritage sites (Ministry of Hajj brief, source PDF dated 3 Sep 2026:
   // "Madinah_Locations_English_Arabic_QR_WITH_DISTANCE_TABLE"). One site is still
@@ -2219,6 +2261,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // seen in production. Swapped to Esri's free, no-signup "Light Gray Canvas" basemap,
   // which is the closest key-free equivalent to CARTO Positron's light, low-contrast
   // style (base + a separate label/reference layer on top, same visual result).
+  // Shown immediately so there's no blank map before the rest of the script runs;
+  // setCity() removes these two one time (they're not tracked in any *_MAP_LAYERS
+  // array) the first time it fires, handing over to the managed FUKUI_BASEMAPS
+  // switcher (Dark/Hybrid/Light) defined further down, next to Medina's/Al Ain's.
   var fukuiBaseTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ', maxZoom: 16
   }).addTo(map);
@@ -3498,7 +3544,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     return s ? (s.num+'. '+mbi(s.nameEn, s.nameAr)) : siteId;
   }
   function medinaShowToast(text){
-    var container = document.getElementById('medina-toasts');
+    var container = document.getElementById(CITY==='al-ain' ? 'alain-toasts' : 'medina-toasts');
     if (!container) return;
     var el = document.createElement('div');
     el.className = 'medina-toast';
@@ -3746,6 +3792,28 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
   requestAnimationFrame(medinaTick);
 
+  var alainLastTs = null;
+  function alainTick(){
+    if (CITY === 'al-ain'){
+      var now = Date.now();
+      var dt = alainLastTs ? (now-alainLastTs)/1000 : 0;
+      alainLastTs = now;
+      if (STATE.alainPlaying){
+        STATE.alainT = STATE.alainT + (dt*2)/MEDINA_DAY_SECONDS; // fixed 2x-equivalent pace, no speed control needed for an ambient view
+        if (STATE.alainT >= 1){ STATE.alainT = STATE.alainT % 1; }
+        var alainSlider = document.getElementById('alain-timeline-slider');
+        if (alainSlider) alainSlider.value = Math.round(STATE.alainT*100);
+        alainUpdateClockLabel();
+      }
+      alainUpdateFlowDots(Math.min(dt, 0.1));
+      updateAlainLive();
+    } else {
+      alainLastTs = null;
+    }
+    requestAnimationFrame(alainTick);
+  }
+  requestAnimationFrame(alainTick);
+
   // ---------------- Sidebar row DOM, built once ----------------
   // Congestion / JMA / camera rows used to be rebuilt from scratch (innerHTML) on
   // every tick. That meant hovering one of them while it "live updates" swapped out
@@ -3913,6 +3981,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
   function renderViewTabs(){
     var container = document.getElementById('view-tabs');
+    if (CITY==='al-ain'){ container.innerHTML = ''; return; } // Al Ain has no tab set -- a single always-visible sidebar (site list + flow/season controls), see .alain-only blocks
     var tabs = CITY==='medina' ? MEDINA_VIEW_TABS : VIEW_TABS;
     var defaultKey = CITY==='medina' ? 'msites' : 'overview';
     container.innerHTML = tabs.map(function(t){
@@ -3937,7 +4006,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // ---------------- State & controls ----------------
   var STATE = { t:0, playing:false, scenario:'none', autoReroute:false, rerouteActive:false, _lastRerouteVisual:false,
                 hoverId:null, selectedId:null, freezeOnPause:true, viewMode:'overview',
-                medinaSelectedId:null, medinaHoverId:null, medinaT:MEDINA_DEFAULT_T, medinaPlaying:false, medinaWeather:'clear', medinaMode:'demo' };
+                medinaSelectedId:null, medinaHoverId:null, medinaT:MEDINA_DEFAULT_T, medinaPlaying:false, medinaWeather:'clear', medinaMode:'demo',
+                alainT:0.5, alainPlaying:false, alainSeason:'winter', alainWeekend:false };
   var slider = document.getElementById('timeline-slider');
   var playBtn = document.getElementById('play-btn');
   var caption = document.getElementById('timeline-caption');
@@ -3992,6 +4062,36 @@ svg.leaflet-image-layer.leaflet-interactive path {
   if (medinaBasemapSwitch){
     Array.prototype.forEach.call(medinaBasemapSwitch.querySelectorAll('.mbase-btn'), function(btn){
       btn.addEventListener('click', function(){ medinaSetBasemap(btn.dataset.basemap); });
+    });
+  }
+
+  function alainUpdatePlayBtn(){
+    var btn = document.getElementById('alain-play-btn');
+    if (btn) btn.innerHTML = STATE.alainPlaying ? '&#10074;&#10074;' : '&#9654;';
+  }
+  var alainPlayBtn = document.getElementById('alain-play-btn');
+  var alainSlider = document.getElementById('alain-timeline-slider');
+  alainPlayBtn.addEventListener('click', function(){
+    STATE.alainPlaying = !STATE.alainPlaying;
+    alainUpdatePlayBtn();
+  });
+  alainSlider.addEventListener('input', function(){
+    STATE.alainT = parseFloat(alainSlider.value)/100;
+    STATE.alainPlaying = false;
+    alainUpdatePlayBtn();
+    alainUpdateClockLabel();
+    updateAlainLive();
+  });
+  var alainBasemapSwitch = document.getElementById('alain-basemap-switch');
+  if (alainBasemapSwitch){
+    Array.prototype.forEach.call(alainBasemapSwitch.querySelectorAll('.mbase-btn'), function(btn){
+      btn.addEventListener('click', function(){ alainSetBasemap(btn.dataset.basemap); });
+    });
+  }
+  var fukuiBasemapSwitch = document.getElementById('fukui-basemap-switch');
+  if (fukuiBasemapSwitch){
+    Array.prototype.forEach.call(fukuiBasemapSwitch.querySelectorAll('.mbase-btn'), function(btn){
+      btn.addEventListener('click', function(){ fukuiSetBasemap(btn.dataset.basemap); });
     });
   }
 
@@ -4146,6 +4246,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       var o = MEDINA_ORIGIN_BY_ID[id], m = medinaOriginMarkers[id];
       if (o && m){ m.setTooltipContent(medinaOriginTooltipText(o)); m.setPopupContent(medinaOriginPopupHtml(o)); }
     });
+    refreshAlainLanguageUI();
   }
   var medinaLangToggleEl = document.getElementById('medina-lang-toggle');
   var medinaLangArLabelEl = medinaLangToggleEl.querySelector('.medina-lang-ar-label');
@@ -4163,11 +4264,335 @@ svg.leaflet-image-layer.leaflet-interactive path {
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setMLang(MLANG === 'en' ? 'ar' : 'en'); }
   });
 
+  // ================================================================================
+  // Al Ain, UAE -- regional visitor-flow concept demo. Unlike Madinah (a tour-operator
+  // booking system), this models Al Ain the way Fukui does: an always-on ambient flow
+  // simulation, no reservation form. Ten real heritage/hotel/university/hotspot sites,
+  // and a handful of "gateway" origins -- including Abu Dhabi and Dubai, ~130-150km
+  // away -- with small dots continuously animating along real-ish roads between
+  // gateways and sites, standing in for coaches/cars/day-trippers moving in and out of
+  // the city. Volume is modulated by time of day, a Winter/Summer season toggle (UAE
+  // tourism is strongly seasonal -- winter is peak, summer brings a heat advisory for
+  // exposed outdoor sites like Jebel Hafeet), and a Weekday/Weekend toggle (Fri/Sat is
+  // the UAE weekend). All figures are illustrative -- there is no ministry/municipality
+  // dataset behind this the way the Madinah brief provided one; distances are
+  // approximate straight-line (haversine) from public coordinates, not surveyed.
+  // ================================================================================
+  var ALAIN_SITES = [
+    { num:1, id:'al-ain-oasis', nameEn:'Al Ain Oasis', nameAr:'واحة العين', cluster:'C', lat:24.2205, lng:55.7631, icon:'🌴', footfall:9,
+      desc:'A 1,200-hectare UNESCO-listed oasis threaded with traditional falaj irrigation channels and over 147,000 date palms, right in the city center.',
+      descAr:'واحة مدرجة في قائمة اليونسكو تمتد على ١٢٠٠ هكتار، تتخللها قنوات الفلج التقليدية وأكثر من ١٤٧ ألف نخلة، في قلب المدينة.' },
+    { num:2, id:'jahili-fort', nameEn:'Al Jahili Fort', nameAr:'قصر الجاهلي', cluster:'C', lat:24.2277, lng:55.7561, icon:'🏰', footfall:6,
+      desc:'A 19th-century mud-brick fort built to protect the oasis and defend Al Ain, now home to a permanent exhibition on explorer Wilfred Thesiger.',
+      descAr:'قلعة طينية من القرن التاسع عشر بُنيت لحماية الواحة والدفاع عن العين، وتضم اليوم معرضًا دائمًا عن الرحالة ويلفريد ثيسيجر.' },
+    { num:3, id:'muwaiji-fort', nameEn:'Qasr Al Muwaiji', nameAr:'قصر المويجعي', cluster:'C', lat:24.2434, lng:55.7398, icon:'🏛️', footfall:4,
+      desc:'The birthplace of the late President Sheikh Khalifa bin Zayed Al Nahyan, restored as a museum on Al Ain’s role in the Trucial States era.',
+      descAr:'مسقط رأس الرئيس الراحل الشيخ خليفة بن زايد آل نهيان، رُمم كمتحف يروي دور مدينة العين في حقبة الإمارات المتصالحة.' },
+    { num:4, id:'national-museum', nameEn:'Al Ain National Museum', nameAr:'متحف العين الوطني', cluster:'C', lat:24.2213, lng:55.7605, icon:'🏺', footfall:5,
+      desc:'The UAE’s oldest museum, covering archaeology and heritage from Bronze Age tombs through to the founding of the Emirates.',
+      descAr:'أقدم متحف في دولة الإمارات، يعرض الآثار والتراث من مقابر العصر البرونزي وحتى تأسيس دولة الإمارات.' },
+    { num:5, id:'qattara-arts', nameEn:'Al Qattara Arts Centre', nameAr:'مركز القطارة للفنون', cluster:'C', lat:24.2331, lng:55.7502, icon:'🎨', footfall:3,
+      desc:'A restored heritage neighborhood around the Qattara oasis, now hosting galleries, workshops and cultural events.',
+      descAr:'حي تراثي مُرمّم حول واحة القطارة، يستضيف اليوم معارض فنية وورش عمل وفعاليات ثقافية.' },
+    { num:6, id:'palace-museum', nameEn:'Sheikh Zayed Palace Museum', nameAr:'متحف قصر الشيخ زايد', cluster:'C', lat:24.2247, lng:55.7644, icon:'👑', footfall:5,
+      desc:'The former residence of the founding President, Sheikh Zayed bin Sultan Al Nahyan, preserved with its original furnishings.',
+      descAr:'المقر السابق للرئيس المؤسس الشيخ زايد بن سلطان آل نهيان، محفوظ بمفروشاته الأصلية.' },
+    { num:7, id:'camel-souq', nameEn:'Al Ain Camel Souq', nameAr:'سوق العين للإبل', cluster:'C', lat:24.2543, lng:55.7196, icon:'🐪', footfall:4,
+      desc:'A working livestock market on the western edge of the city, one of the largest camel markets in the region.',
+      descAr:'سوق ماشية نشط على الطرف الغربي من المدينة، ومن أكبر أسواق الإبل في المنطقة.' },
+    { num:8, id:'hili-park', nameEn:'Hili Archaeological Park', nameAr:'منتزه هيلي الأثري', cluster:'N', lat:24.3273, lng:55.7756, icon:'⛺', footfall:5,
+      desc:'Bronze and Iron Age tombs and settlement remains, roughly 12 km north of the city center, including the circular Hili Grand Tomb.',
+      descAr:'مقابر وآثار استيطان من العصرين البرونزي والحديدي، على بعد نحو ١٢ كم شمال وسط المدينة، وتضم مقبرة هيلي الكبرى الدائرية.' },
+    { num:9, id:'al-ain-zoo', nameEn:'Al Ain Zoo & Safari', nameAr:'حديقة حيوان ومحمية العين', cluster:'S', lat:24.1725, lng:55.7381, icon:'🦁', footfall:8,
+      desc:'A large zoo and safari park south of the city, one of the region’s most-visited family attractions.',
+      descAr:'حديقة حيوان ومحمية سفاري كبيرة جنوب المدينة، من أكثر الوجهات العائلية زيارة في المنطقة.' },
+    { num:10, id:'jebel-hafeet', nameEn:'Jebel Hafeet', nameAr:'جبل حفيت', cluster:'S', lat:24.0575, lng:55.7728, icon:'⛰️', footfall:7,
+      desc:'A 1,240m mountain on the Oman border with a famous switchback drive, Bronze Age beehive tombs at its base, and hot springs nearby -- very exposed, and popular for the winter driving/hiking season.',
+      descAr:'جبل يرتفع ١٢٤٠ مترًا على الحدود مع سلطنة عُمان، يشتهر بطريقه المتعرج، ومقابر خلية النحل من العصر البرونزي عند سفحه، وينابيع حارة قريبة منه. موقع مكشوف جدًا، ويحظى بإقبال في موسم القيادة والتنزه الشتوي.' }
+  ];
+  var ALAIN_SITE_BY_ID = {}; ALAIN_SITES.forEach(function(s){ ALAIN_SITE_BY_ID[s.id]=s; });
+  var ALAIN_CLUSTER_COLOR = { C:'#c9a24b', N:'#2a9dd6', S:'#d0672e' };
+  // Heat exposure (0-1, higher = worse in summer sun) -- outdoor/exposed sites score
+  // high, indoor museums score low. Illustrative, same caveat as Madinah's exposure figures.
+  var ALAIN_EXPOSURE = { 'al-ain-oasis':0.4, 'jahili-fort':0.55, 'muwaiji-fort':0.35, 'national-museum':0.1,
+    'qattara-arts':0.3, 'palace-museum':0.15, 'camel-souq':0.7, 'hili-park':0.75, 'al-ain-zoo':0.6, 'jebel-hafeet':0.95 };
+  ALAIN_SITES.forEach(function(s){ s.exposure = ALAIN_EXPOSURE[s.id] != null ? ALAIN_EXPOSURE[s.id] : 0.4; });
+
+  // Gateways -- where visitors are actually coming from, including the two big
+  // regional feeders (Abu Dhabi ~130km, Dubai ~150km) the user specifically asked to
+  // see traffic to/from. Reuses medinaOriginTooltipText/medinaOriginPopupHtml as-is --
+  // those only ever read {label,labelAr,icon} off whatever object is passed in.
+  var ALAIN_GATEWAYS = [
+    { id:'abu-dhabi', label:'Abu Dhabi (~130 km)', labelAr:'أبوظبي (نحو ١٣٠ كم)', icon:'🌆', lat:24.4539, lng:54.3773 },
+    { id:'dubai',     label:'Dubai (~150 km)', labelAr:'دبي (نحو ١٥٠ كم)', icon:'🌆', lat:25.2048, lng:55.2708 },
+    { id:'alain-airport', label:'Al Ain International Airport', labelAr:'مطار العين الدولي', icon:'✈️', lat:24.2617, lng:55.6092 },
+    { id:'uaeu', label:'UAE University', labelAr:'جامعة الإمارات العربية المتحدة', icon:'🎓', lat:24.2172, lng:55.7358 },
+    { id:'hotel-central', label:'City-center hotel district', labelAr:'حي الفنادق وسط المدينة', icon:'🏨', lat:24.2270, lng:55.7280 },
+    { id:'hotel-hafeet', label:'Jebel Hafeet hotel district', labelAr:'حي فنادق جبل حفيت', icon:'🏨', lat:24.0730, lng:55.7660 }
+  ];
+  var ALAIN_GATEWAY_BY_ID = {}; ALAIN_GATEWAYS.forEach(function(g){ ALAIN_GATEWAY_BY_ID[g.id]=g; });
+  var ALAIN_BOUNDS = [[24.02,55.60],[24.37,55.82]];
+  var ALAIN_TIME_SLOTS = ['07:00','08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+
+  // Season: replaces Madinah's rain/storm weather concept with what actually drives
+  // Al Ain tourism -- winter is peak season and everything is comfortable; summer
+  // puts exposed outdoor sites (Jebel Hafeet, the camel souq, Hili) under a heat
+  // advisory, same mechanic as Madinah's storm-exposure threshold, just re-labeled.
+  var ALAIN_SEASON_INFO = {
+    winter: { icon:'❄️', label:'Winter (peak season)', labelAr:'الشتاء (موسم الذروة)', volumeMult:1.35, desc:'Cool, comfortable weather -- the busiest months for every site, especially Jebel Hafeet.', descAr:'طقس بارد ومريح، وهو الموسم الأكثر ازدحامًا لجميع المواقع، وخصوصًا جبل حفيت.' },
+    summer: { icon:'🥵', label:'Summer (heat advisory)', labelAr:'الصيف (تحذير من الحر)', volumeMult:0.55, desc:'Extreme heat. Exposed outdoor sites see a sharp drop in visitors; indoor museums hold up better.', descAr:'حر شديد. تشهد المواقع الخارجية المكشوفة انخفاضًا حادًا في عدد الزوار، بينما تحافظ المتاحف الداخلية على إقبال أفضل.' }
+  };
+  function alainSiteHeatAdvisory(s){ return STATE.alainSeason === 'summer' && s.exposure >= 0.6; }
+
+  // A handful of fixed gateway-to-site corridors to animate continuous ambient flow
+  // along, rather than modeling discrete individual bookings the way Madinah does --
+  // this is meant to read as "regional traffic," not a reservation system.
+  var ALAIN_FLOW_ROUTES = [
+    { id:'ad-oasis', gatewayId:'abu-dhabi', siteId:'al-ain-oasis' },
+    { id:'dubai-hafeet', gatewayId:'dubai', siteId:'jebel-hafeet' },
+    { id:'airport-museum', gatewayId:'alain-airport', siteId:'national-museum' },
+    { id:'uaeu-jahili', gatewayId:'uaeu', siteId:'jahili-fort' },
+    { id:'hotel-central-muwaiji', gatewayId:'hotel-central', siteId:'muwaiji-fort' },
+    { id:'hotel-hafeet-zoo', gatewayId:'hotel-hafeet', siteId:'al-ain-zoo' },
+    { id:'ad-hili', gatewayId:'abu-dhabi', siteId:'hili-park' },
+    { id:'dubai-souq', gatewayId:'dubai', siteId:'camel-souq' }
+  ];
+
+  // ---------------- Al Ain map layers ----------------
+  var alainMarkerLayer = L.layerGroup();
+  var alainFlowLineLayer = L.layerGroup();
+  var alainParticleLayer = L.layerGroup();
+  var ALAIN_MAP_LAYERS = [alainMarkerLayer, alainFlowLineLayer, alainParticleLayer];
+  var ALAIN_BASEMAPS = MEDINA_BASEMAPS; // same tile services, city-agnostic -- reuse rather than duplicate
+  var alainActiveBasemap = 'dark';
+  function alainSetBasemap(key){
+    if (!ALAIN_BASEMAPS[key]) return;
+    Object.keys(ALAIN_BASEMAPS).forEach(function(k){ if (map.hasLayer(ALAIN_BASEMAPS[k])) map.removeLayer(ALAIN_BASEMAPS[k]); });
+    alainActiveBasemap = key;
+    ALAIN_BASEMAPS[key].addTo(map);
+    Array.prototype.forEach.call(document.querySelectorAll('#alain-basemap-switch .mbase-btn'), function(b){
+      b.classList.toggle('active', b.dataset.basemap === key);
+    });
+  }
+  var FUKUI_BASEMAPS = MEDINA_BASEMAPS; // same tile services, city-agnostic -- reuse rather than duplicate
+  var fukuiActiveBasemap = 'light'; // matches the original always-on light-gray canvas, so Fukui's default look is unchanged
+  function fukuiSetBasemap(key){
+    if (!FUKUI_BASEMAPS[key]) return;
+    Object.keys(FUKUI_BASEMAPS).forEach(function(k){ if (map.hasLayer(FUKUI_BASEMAPS[k])) map.removeLayer(FUKUI_BASEMAPS[k]); });
+    fukuiActiveBasemap = key;
+    FUKUI_BASEMAPS[key].addTo(map);
+    Array.prototype.forEach.call(document.querySelectorAll('#fukui-basemap-switch .mbase-btn'), function(b){
+      b.classList.toggle('active', b.dataset.basemap === key);
+    });
+  }
+
+  var alainSiteMarkers = {}, alainGatewayMarkers = {};
+  function alainPopupHtml(s){
+    var live = alainSiteLive(s);
+    var heat = alainSiteHeatAdvisory(s);
+    return '<b>'+s.icon+' '+s.num+'. '+mbi(s.nameEn, s.nameAr)+'</b><br/>'+
+      '<span style="font-size:11px;">'+mbi('Now ~','الآن ~')+live.now+mbi(' visitors',' زائر')+' &middot; '+mbi('next hr ~','الساعة القادمة ~')+live.next+'</span>'+
+      (heat ? '<br/><span style="font-size:11px;color:#c14a2a;">'+mbi('🥵 Heat advisory: exposed site','🥵 تحذير حر: موقع مكشوف')+'</span>' : '');
+  }
+  function initAlainMarkers(){
+    ALAIN_SITES.forEach(function(s){
+      var marker = L.marker([s.lat, s.lng], {
+        icon: L.divIcon({ className:'alain-site-icon', html:'<div class="msite-badge" style="background:'+ALAIN_CLUSTER_COLOR[s.cluster]+';">'+s.num+'</div>', iconSize:[32,32], iconAnchor:[16,16] })
+      }).addTo(alainMarkerLayer);
+      marker.bindTooltip(s.icon+' '+s.num+'. '+mbi(s.nameEn, s.nameAr), {sticky:true});
+      marker.bindPopup(alainPopupHtml(s));
+      marker.on('popupopen', function(){ marker.setPopupContent(alainPopupHtml(s)); });
+      alainSiteMarkers[s.id] = marker;
+    });
+    ALAIN_GATEWAYS.forEach(function(g){
+      var marker = L.marker([g.lat, g.lng], {
+        icon: L.divIcon({ className:'medina-origin-icon', html:'<div class="morigin-badge">'+g.icon+'</div>', iconSize:[38,38], iconAnchor:[19,19] })
+      }).addTo(alainMarkerLayer);
+      marker.bindTooltip(medinaOriginTooltipText(g), {permanent:false, direction:'right', offset:[8,0], className:'node-label'});
+      marker.bindPopup(medinaOriginPopupHtml(g));
+      alainGatewayMarkers[g.id] = marker;
+    });
+  }
+
+  // Precompute each corridor's path once (bezier now, upgraded to real road geometry
+  // in the background via the same fetchRealRoad/medinaUpgradeLegRoad used for Madinah
+  // -- both are pure geometry helpers with nothing Madinah-specific in them).
+  var alainRouteLegs = {};
+  function initAlainFlowRoutes(){
+    ALAIN_FLOW_ROUTES.forEach(function(r){
+      var g = ALAIN_GATEWAY_BY_ID[r.gatewayId], s = ALAIN_SITE_BY_ID[r.siteId];
+      var from = [g.lat, g.lng], to = [s.lat, s.lng];
+      var leg = { from:from, to:to, path:medinaBezierPath(from, to, 16) };
+      leg.layer = L.polyline(leg.path, { color:ALAIN_CLUSTER_COLOR[s.cluster], weight:2, opacity:0.35, dashArray:'2,7', interactive:false }).addTo(alainFlowLineLayer);
+      alainRouteLegs[r.id] = leg;
+      medinaUpgradeLegRoad(leg);
+    });
+  }
+
+  // ---------------- Al Ain live occupancy + ambient regional flow ----------------
+  function alainCyclePos(){ return STATE.alainT; }
+  function alainWeekendMultiplier(){ return STATE.alainWeekend ? 1.25 : 1; }
+  function alainSeasonMultiplier(){ return ALAIN_SEASON_INFO[STATE.alainSeason].volumeMult; }
+  function alainSiteLive(s){
+    var cyclePos = alainCyclePos();
+    var peak = 0.52 + 0.08*Math.sin(s.num*1.7);
+    var width = 0.22 + 0.05*Math.cos(s.num);
+    var bellAt = function(p){ var d=(p-peak)/width; return Math.exp(-d*d); };
+    var seasonMult = alainSeasonMultiplier() * (STATE.alainSeason==='summer' ? (1 - s.exposure*0.5) : 1);
+    var weekendMult = alainWeekendMultiplier();
+    var maxPax = s.footfall * 22;
+    var now = Math.round(maxPax * bellAt(cyclePos) * seasonMult * weekendMult);
+    var next = Math.round(maxPax * bellAt((cyclePos+0.06)%1) * seasonMult * weekendMult);
+    return { now:Math.max(0,now), next:Math.max(0,next) };
+  }
+  var ALAIN_DAY_START_MIN = 420, ALAIN_DAY_SPAN_MIN = 780; // 07:00 - 20:00
+  function alainCurrentMinute(){ return ALAIN_DAY_START_MIN + STATE.alainT * ALAIN_DAY_SPAN_MIN; }
+  function alainMinToClock(min){ return medinaMinToClock(min); }
+  function alainUpdateClockLabel(){
+    var el = document.getElementById('alain-timeline-caption');
+    if (el) el.textContent = alainMinToClock(alainCurrentMinute()) + mbi(' · regional visitor flow', ' · تدفق الزوار الإقليمي');
+  }
+
+  // Ambient flow dots: a light Poisson-ish spawner, rate scaled by time-of-day (busier
+  // mid-morning to afternoon), season and weekend -- purely illustrative, not tied to
+  // any per-visitor record the way Madinah's bookings are.
+  var alainFlowDots = [];
+  var alainSpawnAcc = 0;
+  function alainDayShapeFactor(){
+    var p = alainCyclePos();
+    var d = (p-0.5)/0.30;
+    return Math.max(0.08, Math.exp(-d*d));
+  }
+  function alainSpawnRate(){ // dots per second, averaged
+    return 0.9 * alainDayShapeFactor() * alainSeasonMultiplier() * alainWeekendMultiplier();
+  }
+  function alainSpawnDot(){
+    var route = ALAIN_FLOW_ROUTES[Math.floor(Math.random()*ALAIN_FLOW_ROUTES.length)];
+    var leg = alainRouteLegs[route.id];
+    if (!leg) return;
+    var outbound = Math.random() < 0.35;
+    var marker = L.circleMarker([0,0], { radius:3.4, stroke:false, fillOpacity:0.9, fillColor: outbound ? '#c9a24b' : '#2a9dd6', interactive:false }).addTo(alainParticleLayer);
+    alainFlowDots.push({ route:route, progress: outbound ? 1 : 0, dir: outbound ? -1 : 1, speed: 0.16+Math.random()*0.10, marker:marker });
+  }
+  function alainUpdateFlowDots(dt){
+    alainSpawnAcc += dt * alainSpawnRate();
+    while (alainSpawnAcc >= 1){ alainSpawnAcc -= 1; alainSpawnDot(); }
+    for (var i=alainFlowDots.length-1;i>=0;i--){
+      var d = alainFlowDots[i];
+      d.progress += d.dir * d.speed * dt;
+      if (d.progress <= 0 || d.progress >= 1){
+        map.removeLayer(d.marker);
+        alainFlowDots.splice(i,1);
+        continue;
+      }
+      var leg = alainRouteLegs[d.route.id];
+      var pt = medinaPointAtPathFraction(leg.path, d.progress);
+      d.marker.setLatLng(pt);
+    }
+  }
+  function updateAlainLive(){
+    ALAIN_SITES.forEach(function(s){
+      var m = alainSiteMarkers[s.id];
+      if (m && m.isPopupOpen()) m.setPopupContent(alainPopupHtml(s));
+    });
+    renderAlainSiteList();
+  }
+  function alainSetSeason(season){
+    if (STATE.alainSeason === season) return;
+    STATE.alainSeason = season;
+    renderAlainSeasonButtons();
+    renderAlainSiteList();
+    medinaShowToast(ALAIN_SEASON_INFO[season].icon+' '+mbi(ALAIN_SEASON_INFO[season].label, ALAIN_SEASON_INFO[season].labelAr)+mbi(' declared.',' معلَن.'));
+  }
+  function alainSetWeekend(isWeekend){
+    if (STATE.alainWeekend === isWeekend) return;
+    STATE.alainWeekend = isWeekend;
+    renderAlainWeekendButtons();
+    renderAlainSiteList();
+  }
+  function renderAlainSeasonButtons(){
+    var el = document.getElementById('alain-season-btns');
+    if (!el) return;
+    el.innerHTML = ['winter','summer'].map(function(k){
+      var info = ALAIN_SEASON_INFO[k];
+      return '<button type="button" class="scenario-btn'+(STATE.alainSeason===k?' active':'')+'" data-season="'+k+'">'+info.icon+' '+mbi(info.label, info.labelAr)+'</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.scenario-btn'), function(btn){
+      btn.addEventListener('click', function(){ alainSetSeason(btn.getAttribute('data-season')); });
+    });
+  }
+  function renderAlainWeekendButtons(){
+    var el = document.getElementById('alain-weekend-btns');
+    if (!el) return;
+    el.innerHTML = [false,true].map(function(v){
+      return '<button type="button" class="scenario-btn'+(STATE.alainWeekend===v?' active':'')+'" data-weekend="'+v+'">'+(v?mbi('🎉 Weekend (Fri/Sat)','🎉 عطلة نهاية الأسبوع (جمعة/سبت)'):mbi('💼 Weekday','💼 يوم عمل'))+'</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.scenario-btn'), function(btn){
+      btn.addEventListener('click', function(){ alainSetWeekend(btn.getAttribute('data-weekend')==='true'); });
+    });
+  }
+  function renderAlainSeasonStatus(){
+    var el = document.getElementById('alain-season-status');
+    if (!el) return;
+    var info = ALAIN_SEASON_INFO[STATE.alainSeason];
+    var affected = ALAIN_SITES.filter(alainSiteHeatAdvisory);
+    el.innerHTML = '<div class="route-preview">'+info.icon+' <b>'+mbi(info.label, info.labelAr)+'.</b> '+mbi(info.desc, info.descAr)+
+      (affected.length ? '<br/>'+mbi('Heat advisory: ','تحذير حر: ')+affected.map(function(s){ return s.num+'. '+mbi(s.nameEn, s.nameAr); }).join(', ') : '')+'</div>';
+  }
+  function renderAlainSiteList(){
+    var el = document.getElementById('alain-site-cards');
+    if (!el) return;
+    var sorted = ALAIN_SITES.slice().sort(function(a,b){ return a.num-b.num; });
+    el.innerHTML = sorted.map(function(s){
+      var live = alainSiteLive(s);
+      var heat = alainSiteHeatAdvisory(s);
+      return '<div class="msite-card" data-alain-id="'+s.id+'">'+
+        '<div class="msite-badge" style="background:'+ALAIN_CLUSTER_COLOR[s.cluster]+';">'+s.num+'</div>'+
+        '<div class="msite-body">'+
+          '<span class="msite-en">'+s.icon+' '+s.nameEn+'</span>'+
+          '<span class="msite-ar">'+s.nameAr+'</span>'+
+          '<div class="msite-live"><div class="occ-track"><div class="occ-fill" style="width:'+Math.min(100,Math.round(live.now/(s.footfall*22)*100))+'%;background:'+(heat?'#c14a2a':ALAIN_CLUSTER_COLOR[s.cluster])+';"></div></div>'+
+          '<span class="msite-pax">'+live.now+(heat?' 🥵':'')+'</span></div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.msite-card'), function(card){
+      card.addEventListener('click', function(){
+        var id = card.getAttribute('data-alain-id');
+        var m = alainSiteMarkers[id];
+        if (m){ map.panTo(m.getLatLng()); m.openPopup(); }
+      });
+    });
+  }
+  function refreshAlainLanguageUI(){
+    renderAlainSiteList();
+    renderAlainSeasonButtons();
+    renderAlainWeekendButtons();
+    renderAlainSeasonStatus();
+    alainUpdateClockLabel();
+    Object.keys(alainGatewayMarkers).forEach(function(id){
+      var g = ALAIN_GATEWAY_BY_ID[id], m = alainGatewayMarkers[id];
+      if (g && m){ m.setTooltipContent(medinaOriginTooltipText(g)); m.setPopupContent(medinaOriginPopupHtml(g)); }
+    });
+  }
+
+  // Run now (not in the main init block further down) -- everything these touch
+  // (alainSiteMarkers, alainRouteLegs, alainFlowDots, ALAIN_BASEMAPS, etc.) is declared
+  // above in this same block, so this has to run after it, not before.
+  initAlainMarkers();
+  initAlainFlowRoutes();
+  renderAlainSiteList();
+  renderAlainSeasonButtons();
+  renderAlainWeekendButtons();
+  renderAlainSeasonStatus();
+  alainUpdateClockLabel();
+  updateAlainLive();
+
   // ---------------- City toggle: Fukui (live demo) <-> Madinah (concept demo) ----------------
   // Swaps map layers + bounds and lets the fukui-only/medina-only CSS (see <style>)
   // show/hide the two cities' panels. tick() below skips Fukui's simulation loop
   // entirely while CITY !== 'fukui', so nothing keeps computing/animating off-screen.
-  var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer, fukuiBaseTile, fukuiRefTile];
+  var FUKUI_MAP_LAYERS = [heatLayer, markerLayer, flowLayer, particleLayer, trailLayer];
   var MEDINA_MAP_LAYERS = [medinaMarkerLayer, medinaRouteLayer, medinaBusRouteLayer];
   function setCity(city){
     CITY = city;
@@ -4175,16 +4600,27 @@ svg.leaflet-image-layer.leaflet-interactive path {
     Array.prototype.forEach.call(document.querySelectorAll('.city-btn'), function(b){
       b.classList.toggle('active', b.dataset.city === city);
     });
+    if (map.hasLayer(fukuiBaseTile)) map.removeLayer(fukuiBaseTile); // one-time: hands off to FUKUI_BASEMAPS below
+    if (map.hasLayer(fukuiRefTile)) map.removeLayer(fukuiRefTile);
+    FUKUI_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
+    MEDINA_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
+    ALAIN_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
+    Object.keys(MEDINA_BASEMAPS).forEach(function(k){ if (map.hasLayer(MEDINA_BASEMAPS[k])) map.removeLayer(MEDINA_BASEMAPS[k]); });
+    Object.keys(ALAIN_BASEMAPS).forEach(function(k){ if (map.hasLayer(ALAIN_BASEMAPS[k])) map.removeLayer(ALAIN_BASEMAPS[k]); });
+    Object.keys(FUKUI_BASEMAPS).forEach(function(k){ if (map.hasLayer(FUKUI_BASEMAPS[k])) map.removeLayer(FUKUI_BASEMAPS[k]); });
     if (city === 'medina'){
-      FUKUI_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
-      MEDINA_MAP_LAYERS.forEach(function(l){ if (!map.hasLayer(l)) map.addLayer(l); });
+      MEDINA_MAP_LAYERS.forEach(function(l){ map.addLayer(l); });
       medinaSetBasemap(medinaActiveBasemap);
       map.fitBounds(MEDINA_BOUNDS);
       updateMedinaLive();
+    } else if (city === 'al-ain'){
+      ALAIN_MAP_LAYERS.forEach(function(l){ map.addLayer(l); });
+      alainSetBasemap(alainActiveBasemap);
+      map.fitBounds(ALAIN_BOUNDS);
+      updateAlainLive();
     } else {
-      MEDINA_MAP_LAYERS.forEach(function(l){ if (map.hasLayer(l)) map.removeLayer(l); });
-      Object.keys(MEDINA_BASEMAPS).forEach(function(k){ if (map.hasLayer(MEDINA_BASEMAPS[k])) map.removeLayer(MEDINA_BASEMAPS[k]); });
-      FUKUI_MAP_LAYERS.forEach(function(l){ if (!map.hasLayer(l)) map.addLayer(l); });
+      FUKUI_MAP_LAYERS.forEach(function(l){ map.addLayer(l); });
+      fukuiSetBasemap(fukuiActiveBasemap);
       map.fitBounds(FUKUI_BOUNDS);
     }
     renderViewTabs();
@@ -4400,13 +4836,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   setTimeout(function(){ requestAnimationFrame(tick); }, 60);
 
-  // This copy of the demo defaults to the Madinah view (served at /medina/); the
-  // toggle above still switches back to Fukui like the root copy does. setCity()
+  // This copy of the demo defaults to the Al Ain view (served at /al-ain/); the
+  // toggle above still switches to Fukui or Madinah like the other copies do. setCity()
   // handles every side effect of the switch itself (data-city attribute, map layers,
   // bounds, button state, view tabs), so calling it once here is enough -- no need
   // to hand-edit the initial button/attribute markup separately and risk it drifting
   // out of sync with this call.
-  setCity('medina');
+  setCity('al-ain');
 
 })();
 </script>
