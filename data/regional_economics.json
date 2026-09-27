@@ -1,0 +1,985 @@
+{
+ "generated_at": "2026-09-27T06:12:12+00:00",
+ "as_of_year": 2025,
+ "currency": "JPY",
+ "assumptions": {
+  "spend_day_tripper": {
+   "value": 5546,
+   "status": "real",
+   "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.7: 1人当たりの観光消費額単価, 合計 日帰り. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+  },
+  "spend_overnight": {
+   "value": 30221,
+   "status": "real",
+   "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.7: 1人当たりの観光消費額単価, 合計 宿泊. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+  },
+  "spend_foreign": {
+   "value": 43000,
+   "status": "real",
+   "source": "Bank of Japan Kanazawa Branch, 17 Apr 2026: average spend per foreign visitor (supplied by the team brief, not re-verified in this build)"
+  },
+  "overnight_share": {
+   "value": 0.111,
+   "status": "real",
+   "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.1: 宿泊 2,385千人 / 合計 21,443千人, 構成比 11.1%. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+  },
+  "benchmark_overnight_share_kanazawa": {
+   "value": 0.39,
+   "status": "modelled",
+   "source": "Kanazawa City overnight share ~39%, from Gabriella's pilot. Benchmark only: a different city with a different visitor mix"
+  },
+  "hotel_occupancy_fukui": {
+   "value": 0.465,
+   "status": "real",
+   "source": "Japan Tourism Agency 宿泊旅行統計調査 2025 (supplied by the team brief, not re-verified in this build): Fukui Prefecture 46.5%"
+  },
+  "hotel_occupancy_ishikawa": {
+   "value": 0.582,
+   "status": "real",
+   "source": "Japan Tourism Agency 宿泊旅行統計調査 2025 (supplied by the team brief, not re-verified in this build): Ishikawa Prefecture 58.2%"
+  }
+ },
+ "prefecture": {
+  "visitors": {
+   "value": 21443000,
+   "status": "real",
+   "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.1: 観光客入込数（実人数）合計 21,443千人. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+  },
+  "visitors_2024": {
+   "value": 20691000,
+   "status": "real",
+   "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.1: 令和6年 合計 20,691千人. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+  },
+  "revenue_yen": {
+   "value": 198700000000,
+   "status": "real",
+   "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.8: 観光消費額 1,987億円. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+  },
+  "opportunity_lost_yen": {
+   "overnight_gap": {
+    "value": 147620580975,
+    "status": "modelled",
+    "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+   },
+   "weather": {
+    "value": null,
+    "status": "pending",
+    "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+   },
+   "idle_rooms": {
+    "value": null,
+    "status": "pending",
+    "source": "Needs room stock and daily occupancy per municipality."
+   }
+  }
+ },
+ "regions": [
+  {
+   "id": "sakai",
+   "name": "Sakai City",
+   "name_ja": "坂井市",
+   "level": "municipality",
+   "nodes": [
+    "tojinbo",
+    "mikuni",
+    "maruoka"
+   ],
+   "centroid": [
+    36.2019,
+    136.1838
+   ],
+   "visitors": {
+    "value": 1867872,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 坂井市 (lgcode 18210), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 1553724,
+    "status": "real",
+    "source": "JTA digital tourism statistics, 坂井市 (lgcode 18210), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   },
+   "visitors_irikomi_2025": {
+    "value": 4294000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 坂井市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 15475179430,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 12859037906,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "fukui",
+   "name": "Fukui City",
+   "name_ja": "福井市",
+   "level": "municipality",
+   "nodes": [
+    "station"
+   ],
+   "centroid": [
+    36.0606,
+    136.2216
+   ],
+   "visitors": {
+    "value": 2326436,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 福井市 (lgcode 18201), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 1269198,
+    "status": "real",
+    "source": "JTA digital tourism statistics, 福井市 (lgcode 18201), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   },
+   "visitors_irikomi_2025": {
+    "value": 4014000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 福井市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 19274347777,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 16015941516,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "katsuyama",
+   "name": "Katsuyama City",
+   "name_ja": "勝山市",
+   "level": "municipality",
+   "nodes": [
+    "katsuyama"
+   ],
+   "centroid": [
+    36.1146,
+    136.6876
+   ],
+   "visitors": {
+    "value": 1646438,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 勝山市 (lgcode 18206), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 1588657,
+    "status": "real",
+    "source": "JTA digital tourism statistics, 勝山市 (lgcode 18206), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   },
+   "visitors_irikomi_2025": {
+    "value": 3021000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 勝山市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 13640615347,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 11334614284,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "mihama_wakasa",
+   "name": "Mihama & Wakasa Towns",
+   "name_ja": "美浜町・若狭町",
+   "level": "municipality",
+   "nodes": [
+    "rainbow"
+   ],
+   "centroid": [
+    35.5859,
+    135.8825
+   ],
+   "visitors": {
+    "value": 1353418,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 美浜町 (lgcode 18442) + 若狭町 (lgcode 18501), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 727912,
+    "status": "real",
+    "source": "JTA digital tourism statistics, 美浜町 (lgcode 18442) + 若狭町 (lgcode 18501), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   },
+   "visitors_irikomi_2025": {
+    "value": 3344000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 美浜町 + 若狭町 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 11212966624,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 9317369373,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "awara",
+   "name": "Awara City",
+   "name_ja": "あわら市",
+   "level": "municipality",
+   "nodes": [
+    "awara"
+   ],
+   "centroid": [
+    36.2069,
+    136.2255
+   ],
+   "visitors": {
+    "value": 551638,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), あわら市 (lgcode 18208), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 367276,
+    "status": "real",
+    "source": "JTA digital tourism statistics, あわら市 (lgcode 18208), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   },
+   "visitors_irikomi_2025": {
+    "value": 2062000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: あわら市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 4570279457,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 3797655274,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "eiheiji",
+   "name": "Eiheiji Town",
+   "name_ja": "永平寺町",
+   "level": "municipality",
+   "nodes": [
+    "eiheiji"
+   ],
+   "centroid": [
+    36.0554,
+    136.3505
+   ],
+   "visitors": {
+    "value": 751861,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 永平寺町 (lgcode 18322), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 706312,
+    "status": "real",
+    "source": "JTA digital tourism statistics, 永平寺町 (lgcode 18322), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   },
+   "visitors_irikomi_2025": {
+    "value": 950000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 永平寺町 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 6229111995,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 5176055479,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "ono",
+   "name": "Ono City",
+   "name_ja": "大野市",
+   "level": "municipality",
+   "nodes": [
+    "ono"
+   ],
+   "centroid": [
+    35.9784,
+    136.4874
+   ],
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "visitors_calendar_2025": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "visitors_irikomi_2025": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "revenue_yen": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": null,
+     "status": "pending",
+     "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  }
+ ],
+ "nodes": [
+  {
+   "id": "tojinbo",
+   "name": "Tojinbo",
+   "name_ja": "東尋坊",
+   "lat": 36.2345,
+   "lon": 136.1257,
+   "region": "sakai",
+   "priority": true,
+   "visitors": {
+    "value": 651000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 東尋坊 延べ人数 (location-data estimate since 2020, see p.3 note 2). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "visitors_2024": {
+    "value": 778000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 東尋坊 延べ人数 (location-data estimate since 2020, see p.3 note 2), 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 5393486175,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 4481695575,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   },
+   "annotation": "No official parking: city lot closed since Jul 2023 for redevelopment. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"
+  },
+  {
+   "id": "station",
+   "aliases": [
+    "fukui_station"
+   ],
+   "name": "Fukui Station",
+   "name_ja": "福井駅",
+   "lat": 36.0606,
+   "lon": 136.2216,
+   "region": "fukui",
+   "priority": true,
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."
+   },
+   "visitors_2024": {
+    "value": null,
+    "status": "pending",
+    "source": "No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."
+   },
+   "revenue_yen": {
+    "value": null,
+    "status": "pending",
+    "source": "No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": null,
+     "status": "pending",
+     "source": "No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   },
+   "annotation": "200-space west-exit lot; 12 downtown lots, 2,065 spaces. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"
+  },
+  {
+   "id": "katsuyama",
+   "name": "Katsuyama (Dinosaur Museum)",
+   "name_ja": "勝山（恐竜博物館）",
+   "lat": 36.1146,
+   "lon": 136.6876,
+   "region": "katsuyama",
+   "priority": true,
+   "visitors": {
+    "value": 1562000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: 恐竜博物館・かつやま恐竜の森 延べ人数 (incl. outdoor museum). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "visitors_2024": {
+    "value": 1546000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: 恐竜博物館・かつやま恐竜の森 延べ人数 (incl. outdoor museum), 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 12941052850,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 10753315650,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   },
+   "annotation": "~1,400 parking spaces at the museum; timed-entry tickets. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"
+  },
+  {
+   "id": "rainbow",
+   "aliases": [
+    "rainbow_line"
+   ],
+   "name": "Rainbow Line",
+   "name_ja": "レインボーライン",
+   "lat": 35.5859,
+   "lon": 135.8825,
+   "region": "mihama_wakasa",
+   "priority": true,
+   "visitors": {
+    "value": 443000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: レインボーライン (美浜町・若狭町) 延べ人数. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "visitors_2024": {
+    "value": 472000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: レインボーライン (美浜町・若狭町) 延べ人数, 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 3670221775,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 3049755975,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   },
+   "annotation": "200 spaces across lots 1 and 2; lift ~450/hour each way. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"
+  },
+  {
+   "id": "awara",
+   "aliases": [
+    "awara_onsen"
+   ],
+   "name": "Awara Onsen",
+   "name_ja": "あわら温泉",
+   "lat": 36.2069,
+   "lon": 136.2255,
+   "region": "awara",
+   "priority": true,
+   "visitors": {
+    "value": 658000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: あわら温泉 延べ人数. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "visitors_2024": {
+    "value": 680000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: あわら温泉 延べ人数, 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 5451480650,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 4529885850,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   },
+   "annotation": "165-space lot at Yunomachi Station; total ryokan rooms not published. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"
+  },
+  {
+   "id": "eiheiji",
+   "name": "Eiheiji Temple",
+   "name_ja": "永平寺",
+   "lat": 36.0554,
+   "lon": 136.3505,
+   "region": "eiheiji",
+   "priority": true,
+   "visitors": {
+    "value": 518000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 大本山永平寺 延べ人数. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "visitors_2024": {
+    "value": 544000,
+    "status": "real",
+    "source": "Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 大本山永平寺 延べ人数, 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
+   },
+   "revenue_yen": {
+    "value": 4291591150,
+    "status": "modelled",
+    "source": "visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": 3566080350,
+     "status": "modelled",
+     "source": "If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   },
+   "annotation": "3 town lots, counts not published. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"
+  },
+  {
+   "id": "mikuni",
+   "name": "Mikuni Port",
+   "name_ja": "三国湊",
+   "lat": 36.2211,
+   "lon": 136.1494,
+   "region": "sakai",
+   "priority": false,
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "visitors_2024": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "revenue_yen": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": null,
+     "status": "pending",
+     "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "maruoka",
+   "name": "Maruoka Castle",
+   "name_ja": "丸岡城",
+   "lat": 36.1502,
+   "lon": 136.2764,
+   "region": "sakai",
+   "priority": false,
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "visitors_2024": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "revenue_yen": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": null,
+     "status": "pending",
+     "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  },
+  {
+   "id": "ono",
+   "name": "Ono Castle Town",
+   "name_ja": "大野城下町",
+   "lat": 35.9784,
+   "lon": 136.4874,
+   "region": "ono",
+   "priority": false,
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "visitors_2024": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "revenue_yen": {
+    "value": null,
+    "status": "pending",
+    "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+   },
+   "opportunity_lost_yen": {
+    "overnight_gap": {
+     "value": null,
+     "status": "pending",
+     "source": "Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."
+    },
+    "weather": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs daily camera forecast residuals (predicted minus actual arrivals) per node."
+    },
+    "idle_rooms": {
+     "value": null,
+     "status": "pending",
+     "source": "Needs room stock and daily occupancy per municipality."
+    }
+   }
+  }
+ ],
+ "flows": [
+  {
+   "from": "kanazawa",
+   "to": "awara",
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."
+   },
+   "status": "pending",
+   "note": "Kanazawa to Awara Onsen (Hokuriku Shinkansen corridor): not yet measured.",
+   "from_coord": [
+    36.578,
+    136.6485
+   ]
+  },
+  {
+   "from": "kanazawa",
+   "to": "tojinbo",
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."
+   },
+   "status": "pending",
+   "note": "Kanazawa to Tojinbo: not yet measured.",
+   "from_coord": [
+    36.578,
+    136.6485
+   ]
+  },
+  {
+   "from": "station",
+   "to": "eiheiji",
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."
+   },
+   "status": "pending",
+   "note": "Fukui Station to Eiheiji: not yet measured."
+  },
+  {
+   "from": "station",
+   "to": "tojinbo",
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."
+   },
+   "status": "pending",
+   "note": "Fukui Station to Tojinbo: not yet measured."
+  },
+  {
+   "from": "tsuruga",
+   "to": "rainbow",
+   "visitors": {
+    "value": null,
+    "status": "pending",
+    "source": "Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."
+   },
+   "status": "pending",
+   "note": "Tsuruga to Rainbow Line: not yet measured.",
+   "from_coord": [
+    35.6451,
+    136.0754
+   ]
+  }
+ ],
+ "comparison_regions": [
+  {
+   "id": "kanazawa_city",
+   "name": "Kanazawa City",
+   "name_ja": "金沢市",
+   "level": "comparison",
+   "visitors": {
+    "value": 7029328,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 金沢市 (lgcode 17201), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 6259882,
+    "status": "real",
+    "source": "JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   }
+  },
+  {
+   "id": "toyama_city",
+   "name": "Toyama City",
+   "name_ja": "富山市",
+   "level": "comparison",
+   "visitors": {
+    "value": 6389861,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 富山市 (lgcode 16201), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 6036671,
+    "status": "real",
+    "source": "JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   }
+  },
+  {
+   "id": "fukui_pref",
+   "name": "Fukui Prefecture",
+   "name_ja": "福井県",
+   "level": "comparison",
+   "visitors": {
+    "value": 11970282,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 福井県 (lgcode 18), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 8757899,
+    "status": "real",
+    "source": "JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   }
+  },
+  {
+   "id": "ishikawa_pref",
+   "name": "Ishikawa Prefecture",
+   "name_ja": "石川県",
+   "level": "comparison",
+   "visitors": {
+    "value": 16450565,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 石川県 (lgcode 17), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 13486876,
+    "status": "real",
+    "source": "JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   }
+  },
+  {
+   "id": "toyama_pref",
+   "name": "Toyama Prefecture",
+   "name_ja": "富山県",
+   "level": "comparison",
+   "visitors": {
+    "value": 15265543,
+    "status": "real",
+    "source": "JTA digital tourism statistics (観光来訪者数), 富山県 (lgcode 16), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."
+   },
+   "visitors_calendar_2025": {
+    "value": 14086141,
+    "status": "real",
+    "source": "JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."
+   }
+  }
+ ],
+ "external_points": {
+  "kanazawa": {
+   "name": "Kanazawa",
+   "name_ja": "金沢",
+   "lat": 36.578,
+   "lon": 136.6485
+  },
+  "tsuruga": {
+   "name": "Tsuruga Station",
+   "name_ja": "敦賀駅",
+   "lat": 35.6451,
+   "lon": 136.0754
+  }
+ },
+ "visitor_window": {
+  "regions": "2025-09 to 2026-08",
+  "nodes": "calendar 2025"
+ }
+}

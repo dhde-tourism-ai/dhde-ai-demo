@@ -860,6 +860,45 @@ svg.leaflet-image-layer.leaflet-interactive path {
 @media (max-width:1080px){ .left-panel{display:none;} }
 @media (max-width:820px){ .sidebar{display:none;} }
 </style>
+<style>
+  /* ---- Regional economics overlay (data/regional_economics.json) ---- */
+  .rex-control{background:rgba(252,252,251,0.97);border:1px solid var(--border,#d9d9d4);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.10);font-family:inherit;color:var(--ink-1,#0b0b0b);max-width:250px;}
+  .rex-toggle{display:flex;align-items:center;gap:7px;width:100%;border:none;background:transparent;font:inherit;font-size:12px;font-weight:800;padding:7px 10px;cursor:pointer;color:inherit;}
+  .rex-toggle .rex-switch{position:relative;width:28px;height:16px;border-radius:999px;background:#c8c8c3;flex-shrink:0;transition:background .15s;}
+  .rex-toggle .rex-switch::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .15s;}
+  .rex-toggle[aria-pressed="true"] .rex-switch{background:#2a78d6;}
+  .rex-toggle[aria-pressed="true"] .rex-switch::after{left:14px;}
+  .rex-legend{display:none;border-top:1px solid var(--grid,#e8e8e4);padding:7px 10px 9px 10px;font-size:10.5px;line-height:1.45;color:var(--ink-2,#3a3a38);}
+  .rex-control.on .rex-legend{display:block;}
+  .rex-pills{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 6px 0;}
+  .rex-pill{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:999px;border:1.5px solid transparent;white-space:nowrap;line-height:1.5;}
+  .rex-pill.real{background:rgba(12,163,12,0.12);color:#087a08;border-color:#0ca30c;}
+  .rex-pill.modelled{background:rgba(42,120,214,0.12);color:#1d5ca8;border-color:#2a78d6;}
+  .rex-pill.illustrative{background:rgba(237,161,0,0.10);color:#8a5d00;border-color:#eda100;border-style:dashed;}
+  .rex-pill.pending{background:rgba(120,120,116,0.12);color:#5e5e5a;border-color:#9a9a95;}
+  .rex-row{display:flex;justify-content:space-between;gap:8px;}
+  .rex-row b{font-variant-numeric:tabular-nums;}
+  .rex-key{display:flex;align-items:center;gap:6px;margin-top:3px;}
+  .rex-key .circ{width:12px;height:12px;border-radius:50%;background:rgba(42,120,214,0.18);border:1.5px solid #2a78d6;flex-shrink:0;}
+  .rex-key .dash{width:18px;border-top:2px dashed #8a8a86;flex-shrink:0;}
+  .rex-note{margin-top:5px;color:var(--ink-muted,#6b6b67);font-size:9.8px;}
+  .rex-src{margin-top:4px;color:var(--ink-muted,#6b6b67);font-size:9.5px;}
+  .rex-label{background:rgba(255,255,255,0.95);border:1px solid #cfcfca;border-radius:6px;padding:3px 6px 4px 6px;font-size:10.5px;line-height:1.35;color:#1a1a18;box-shadow:0 1px 4px rgba(0,0,0,0.12);white-space:nowrap;width:max-content;cursor:pointer;}
+  .rex-label .nm{font-weight:800;font-size:10.5px;}
+  .rex-label .v{display:flex;align-items:center;gap:4px;}
+  .rex-label .v i{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .rex-label.muted{opacity:0.75;font-size:9.5px;}
+  .rex-v-real i{background:#0ca30c;}
+  .rex-v-modelled i{background:#2a78d6;}
+  .rex-v-illustrative i{background:transparent;border:1.5px dashed #eda100;}
+  .rex-v-pending i{background:#9a9a95;}
+  .rex-v-pending{color:#6b6b67;}
+  .rex-pop{font-size:11.5px;line-height:1.5;min-width:220px;}
+  .rex-pop table{border-collapse:collapse;width:100%;margin-top:4px;}
+  .rex-pop td{padding:2px 4px;border-top:1px solid #eee;vertical-align:top;}
+  .rex-pop td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;}
+  .rex-pop .srcs{margin-top:6px;font-size:9.8px;color:#6b6b67;max-width:300px;white-space:normal;}
+</style>
 </head>
 <body>
 <div class="app">
@@ -1426,6 +1465,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   // ---------------- Map init ----------------
   var map = L.map('map', { zoomControl:false, scrollWheelZoom:true }).fitBounds(FUKUI_BOUNDS);
   L.control.zoom({position:'topright'}).addTo(map);
+  window.DHDE_MAP = map; // read by the optional Economics overlay script at the end of the page
   // CARTO's basemap tiles (basemaps.cartocdn.com) now require a signed-up API key
   // for every request -- unkeyed requests get the "API KEY REQUIRED" watermark tile
   // seen in production. Swapped to Esri's free, no-signup "Light Gray Canvas" basemap,
@@ -2280,6 +2320,225 @@ svg.leaflet-image-layer.leaflet-interactive path {
   setTimeout(function(){ requestAnimationFrame(tick); }, 60);
 
 
+})();
+</script>
+
+<!-- ================= Regional economics overlay =================
+     Optional layer, off by default. Reads data/regional_economics.json
+     (built by economics/build_regional_economics.py); falls back to the inline
+     copy below when fetch is unavailable (e.g. opened from file://).
+     Refresh the inline copy with:
+       python economics/build_regional_economics.py --inline index.html -->
+<script>
+/* REGIONAL_ECONOMICS_INLINE_START */
+window.REGIONAL_ECONOMICS_DATA = {"generated_at":"2026-09-27T06:12:12+00:00","as_of_year":2025,"currency":"JPY","assumptions":{"spend_day_tripper":{"value":5546,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.7: 1人当たりの観光消費額単価, 合計 日帰り. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"spend_overnight":{"value":30221,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.7: 1人当たりの観光消費額単価, 合計 宿泊. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"spend_foreign":{"value":43000,"status":"real","source":"Bank of Japan Kanazawa Branch, 17 Apr 2026: average spend per foreign visitor (supplied by the team brief, not re-verified in this build)"},"overnight_share":{"value":0.111,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.1: 宿泊 2,385千人 / 合計 21,443千人, 構成比 11.1%. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"benchmark_overnight_share_kanazawa":{"value":0.39,"status":"modelled","source":"Kanazawa City overnight share ~39%, from Gabriella's pilot. Benchmark only: a different city with a different visitor mix"},"hotel_occupancy_fukui":{"value":0.465,"status":"real","source":"Japan Tourism Agency 宿泊旅行統計調査 2025 (supplied by the team brief, not re-verified in this build): Fukui Prefecture 46.5%"},"hotel_occupancy_ishikawa":{"value":0.582,"status":"real","source":"Japan Tourism Agency 宿泊旅行統計調査 2025 (supplied by the team brief, not re-verified in this build): Ishikawa Prefecture 58.2%"}},"prefecture":{"visitors":{"value":21443000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.1: 観光客入込数（実人数）合計 21,443千人. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"visitors_2024":{"value":20691000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.1: 令和6年 合計 20,691千人. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":198700000000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.8: 観光消費額 1,987億円. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"opportunity_lost_yen":{"overnight_gap":{"value":147620580975,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},"regions":[{"id":"sakai","name":"Sakai City","name_ja":"坂井市","level":"municipality","nodes":["tojinbo","mikuni","maruoka"],"centroid":[36.2019,136.1838],"visitors":{"value":1867872,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 坂井市 (lgcode 18210), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":1553724,"status":"real","source":"JTA digital tourism statistics, 坂井市 (lgcode 18210), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."},"visitors_irikomi_2025":{"value":4294000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 坂井市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":15475179430,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."},"opportunity_lost_yen":{"overnight_gap":{"value":12859037906,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"fukui","name":"Fukui City","name_ja":"福井市","level":"municipality","nodes":["station"],"centroid":[36.0606,136.2216],"visitors":{"value":2326436,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 福井市 (lgcode 18201), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":1269198,"status":"real","source":"JTA digital tourism statistics, 福井市 (lgcode 18201), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."},"visitors_irikomi_2025":{"value":4014000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 福井市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":19274347777,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."},"opportunity_lost_yen":{"overnight_gap":{"value":16015941516,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"katsuyama","name":"Katsuyama City","name_ja":"勝山市","level":"municipality","nodes":["katsuyama"],"centroid":[36.1146,136.6876],"visitors":{"value":1646438,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 勝山市 (lgcode 18206), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":1588657,"status":"real","source":"JTA digital tourism statistics, 勝山市 (lgcode 18206), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."},"visitors_irikomi_2025":{"value":3021000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 勝山市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":13640615347,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."},"opportunity_lost_yen":{"overnight_gap":{"value":11334614284,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"mihama_wakasa","name":"Mihama & Wakasa Towns","name_ja":"美浜町・若狭町","level":"municipality","nodes":["rainbow"],"centroid":[35.5859,135.8825],"visitors":{"value":1353418,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 美浜町 (lgcode 18442) + 若狭町 (lgcode 18501), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":727912,"status":"real","source":"JTA digital tourism statistics, 美浜町 (lgcode 18442) + 若狭町 (lgcode 18501), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."},"visitors_irikomi_2025":{"value":3344000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 美浜町 + 若狭町 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":11212966624,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."},"opportunity_lost_yen":{"overnight_gap":{"value":9317369373,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"awara","name":"Awara City","name_ja":"あわら市","level":"municipality","nodes":["awara"],"centroid":[36.2069,136.2255],"visitors":{"value":551638,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), あわら市 (lgcode 18208), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":367276,"status":"real","source":"JTA digital tourism statistics, あわら市 (lgcode 18208), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."},"visitors_irikomi_2025":{"value":2062000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: あわら市 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":4570279457,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."},"opportunity_lost_yen":{"overnight_gap":{"value":3797655274,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"eiheiji","name":"Eiheiji Town","name_ja":"永平寺町","level":"municipality","nodes":["eiheiji"],"centroid":[36.0554,136.3505],"visitors":{"value":751861,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 永平寺町 (lgcode 18322), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":706312,"status":"real","source":"JTA digital tourism statistics, 永平寺町 (lgcode 18322), calendar 2025 (Jan-Dec), via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."},"visitors_irikomi_2025":{"value":950000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.9: 永平寺町 延べ人数 2025 (gross visits). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":6229111995,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is the JTA 観光来訪者数 (a different definition from the prefecture's 入込数, whose spend-per-visitor figures are applied here)."},"opportunity_lost_yen":{"overnight_gap":{"value":5176055479,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"ono","name":"Ono City","name_ja":"大野市","level":"municipality","nodes":["ono"],"centroid":[35.9784,136.4874],"visitors":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"visitors_calendar_2025":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"visitors_irikomi_2025":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"revenue_yen":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"opportunity_lost_yen":{"overnight_gap":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}}],"nodes":[{"id":"tojinbo","name":"Tojinbo","name_ja":"東尋坊","lat":36.2345,"lon":136.1257,"region":"sakai","priority":true,"visitors":{"value":651000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 東尋坊 延べ人数 (location-data estimate since 2020, see p.3 note 2). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"visitors_2024":{"value":778000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 東尋坊 延べ人数 (location-data estimate since 2020, see p.3 note 2), 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":5393486175,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."},"opportunity_lost_yen":{"overnight_gap":{"value":4481695575,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}},"annotation":"No official parking: city lot closed since Jul 2023 for redevelopment. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"},{"id":"station","aliases":["fukui_station"],"name":"Fukui Station","name_ja":"福井駅","lat":36.0606,"lon":136.2216,"region":"fukui","priority":true,"visitors":{"value":null,"status":"pending","source":"No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."},"visitors_2024":{"value":null,"status":"pending","source":"No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."},"revenue_yen":{"value":null,"status":"pending","source":"No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."},"opportunity_lost_yen":{"overnight_gap":{"value":null,"status":"pending","source":"No station-area line in the prefecture site table (Fukui City only as a whole); needs station gate or camera counts."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}},"annotation":"200-space west-exit lot; 12 downtown lots, 2,065 spaces. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"},{"id":"katsuyama","name":"Katsuyama (Dinosaur Museum)","name_ja":"勝山（恐竜博物館）","lat":36.1146,"lon":136.6876,"region":"katsuyama","priority":true,"visitors":{"value":1562000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: 恐竜博物館・かつやま恐竜の森 延べ人数 (incl. outdoor museum). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"visitors_2024":{"value":1546000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: 恐竜博物館・かつやま恐竜の森 延べ人数 (incl. outdoor museum), 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":12941052850,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."},"opportunity_lost_yen":{"overnight_gap":{"value":10753315650,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}},"annotation":"~1,400 parking spaces at the museum; timed-entry tickets. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"},{"id":"rainbow","aliases":["rainbow_line"],"name":"Rainbow Line","name_ja":"レインボーライン","lat":35.5859,"lon":135.8825,"region":"mihama_wakasa","priority":true,"visitors":{"value":443000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: レインボーライン (美浜町・若狭町) 延べ人数. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"visitors_2024":{"value":472000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: レインボーライン (美浜町・若狭町) 延べ人数, 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":3670221775,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."},"opportunity_lost_yen":{"overnight_gap":{"value":3049755975,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}},"annotation":"200 spaces across lots 1 and 2; lift ~450/hour each way. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"},{"id":"awara","aliases":["awara_onsen"],"name":"Awara Onsen","name_ja":"あわら温泉","lat":36.2069,"lon":136.2255,"region":"awara","priority":true,"visitors":{"value":658000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: あわら温泉 延べ人数. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"visitors_2024":{"value":680000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.12: あわら温泉 延べ人数, 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":5451480650,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."},"opportunity_lost_yen":{"overnight_gap":{"value":4529885850,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}},"annotation":"165-space lot at Yunomachi Station; total ryokan rooms not published. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"},{"id":"eiheiji","name":"Eiheiji Temple","name_ja":"永平寺","lat":36.0554,"lon":136.3505,"region":"eiheiji","priority":true,"visitors":{"value":518000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 大本山永平寺 延べ人数. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"visitors_2024":{"value":544000,"status":"real","source":"Fukui Pref. 観光客入込数（推計）令和7年 (released 12 Jun 2026), p.13: 大本山永平寺 延べ人数, 令和6年. https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"},"revenue_yen":{"value":4291591150,"status":"modelled","source":"visitors x (0.111 x ¥30,221 + 0.889 x ¥5,546) = visitors x ¥8,285 per visitor. Uses the prefecture-wide overnight share and spend per visitor for this place. Visitor count is 入込数 延べ人数 (gross visits), so node revenues overlap and must not be summed."},"opportunity_lost_yen":{"overnight_gap":{"value":3566080350,"status":"modelled","source":"If the Kanazawa overnight share were reached: visitors x (0.39 - 0.111) x (¥30,221 - ¥5,546). What-if against another city's benchmark, not a forecast."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}},"annotation":"3 town lots, counts not published. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)"},{"id":"mikuni","name":"Mikuni Port","name_ja":"三国湊","lat":36.2211,"lon":136.1494,"region":"sakai","priority":false,"visitors":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"visitors_2024":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"revenue_yen":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"opportunity_lost_yen":{"overnight_gap":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"maruoka","name":"Maruoka Castle","name_ja":"丸岡城","lat":36.1502,"lon":136.2764,"region":"sakai","priority":false,"visitors":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"visitors_2024":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"revenue_yen":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"opportunity_lost_yen":{"overnight_gap":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}},{"id":"ono","name":"Ono Castle Town","name_ja":"大野城下町","lat":35.9784,"lon":136.4874,"region":"ono","priority":false,"visitors":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"visitors_2024":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"revenue_yen":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"opportunity_lost_yen":{"overnight_gap":{"value":null,"status":"pending","source":"Not a priority node (see docs/data_gaps.md in dhde-preprocessing-model PR #6)."},"weather":{"value":null,"status":"pending","source":"Needs daily camera forecast residuals (predicted minus actual arrivals) per node."},"idle_rooms":{"value":null,"status":"pending","source":"Needs room stock and daily occupancy per municipality."}}}],"flows":[{"from":"kanazawa","to":"awara","visitors":{"value":null,"status":"pending","source":"Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."},"status":"pending","note":"Kanazawa to Awara Onsen (Hokuriku Shinkansen corridor): not yet measured.","from_coord":[36.578,136.6485]},{"from":"kanazawa","to":"tojinbo","visitors":{"value":null,"status":"pending","source":"Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."},"status":"pending","note":"Kanazawa to Tojinbo: not yet measured.","from_coord":[36.578,136.6485]},{"from":"station","to":"eiheiji","visitors":{"value":null,"status":"pending","source":"Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."},"status":"pending","note":"Fukui Station to Eiheiji: not yet measured."},{"from":"station","to":"tojinbo","visitors":{"value":null,"status":"pending","source":"Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."},"status":"pending","note":"Fukui Station to Tojinbo: not yet measured."},{"from":"tsuruga","to":"rainbow","visitors":{"value":null,"status":"pending","source":"Visitor movement between places is not measured yet (needs KDDI location data or survey v2)."},"status":"pending","note":"Tsuruga to Rainbow Line: not yet measured.","from_coord":[35.6451,136.0754]}],"comparison_regions":[{"id":"kanazawa_city","name":"Kanazawa City","name_ja":"金沢市","level":"comparison","visitors":{"value":7029328,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 金沢市 (lgcode 17201), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":6259882,"status":"real","source":"JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."}},{"id":"toyama_city","name":"Toyama City","name_ja":"富山市","level":"comparison","visitors":{"value":6389861,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 富山市 (lgcode 16201), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":6036671,"status":"real","source":"JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."}},{"id":"fukui_pref","name":"Fukui Prefecture","name_ja":"福井県","level":"comparison","visitors":{"value":11970282,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 福井県 (lgcode 18), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":8757899,"status":"real","source":"JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."}},{"id":"ishikawa_pref","name":"Ishikawa Prefecture","name_ja":"石川県","level":"comparison","visitors":{"value":16450565,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 石川県 (lgcode 17), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":13486876,"status":"real","source":"JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."}},{"id":"toyama_pref","name":"Toyama Prefecture","name_ja":"富山県","level":"comparison","visitors":{"value":15265543,"status":"real","source":"JTA digital tourism statistics (観光来訪者数), 富山県 (lgcode 16), sum of the latest 12 months 2025-09 to 2026-08, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27). Caveat: Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting."},"visitors_calendar_2025":{"value":14086141,"status":"real","source":"JTA digital tourism statistics, calendar 2025, via https://github.com/code4fukui/japan-kanko-stat (downloaded 2026-09-27)."}}],"external_points":{"kanazawa":{"name":"Kanazawa","name_ja":"金沢","lat":36.578,"lon":136.6485},"tsuruga":{"name":"Tsuruga Station","name_ja":"敦賀駅","lat":35.6451,"lon":136.0754}},"visitor_window":{"regions":"2025-09 to 2026-08","nodes":"calendar 2025"}};
+/* REGIONAL_ECONOMICS_INLINE_END */
+</script>
+<script>
+(function(){
+  var map = window.DHDE_MAP;
+  if (!map || typeof L === 'undefined') return;
+
+  var STATUS_COLOR = { real:'#0ca30c', modelled:'#2a78d6', illustrative:'#eda100', pending:'#9a9a95' };
+  var DATA = null, DATA_ORIGIN = null, ON = false, LOADING = false;
+  var layer = L.layerGroup();
+  if (!map.getPane('rexAreas')){ map.createPane('rexAreas'); map.getPane('rexAreas').style.zIndex = 350; }   // under the existing nodes
+  if (!map.getPane('rexLabels')){ map.createPane('rexLabels'); map.getPane('rexLabels').style.zIndex = 620; } // over nodes, under tooltips
+
+  function lang(){ return document.documentElement.getAttribute('data-lang') === 'ja' ? 'ja' : 'en'; }
+  function bi(en, ja){ return lang() === 'ja' ? ja : en; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function nm(o){ return lang() === 'ja' && o.name_ja ? o.name_ja : o.name; }
+  var PENDING = '[pending]';
+
+  function fmtYen(v){
+    if (v == null) return PENDING;
+    if (lang() === 'ja'){
+      if (v >= 1e12) return (v/1e12).toFixed(2) + '兆円';
+      if (v >= 1e8) return (v/1e8).toFixed(1).replace(/\.0$/,'') + '億円';
+      return Math.round(v).toLocaleString() + '円';
+    }
+    if (v >= 1e9) return '¥' + (v/1e9).toFixed(2) + 'B';
+    if (v >= 1e6) return '¥' + (v/1e6).toFixed(1) + 'M';
+    return '¥' + Math.round(v).toLocaleString();
+  }
+  function fmtPeople(v){
+    if (v == null) return PENDING;
+    if (lang() === 'ja') return v >= 1e4 ? (v/1e4).toFixed(1).replace(/\.0$/,'') + '万人' : v.toLocaleString() + '人';
+    if (v >= 1e6) return (v/1e6).toFixed(2) + 'M';
+    if (v >= 1e3) return Math.round(v/1e3) + 'k';
+    return String(v);
+  }
+  function statusLabel(s){
+    return { real:bi('Real','実データ'), modelled:bi('Calculated','算出値'), illustrative:bi('Illustrative','イメージ'), pending:bi('Data pending','データ待ち') }[s] || s;
+  }
+  function pill(s){ return '<span class="rex-pill '+esc(s)+'">'+esc(statusLabel(s))+'</span>'; }
+  function valLine(label, m, fmt){
+    var st = (m && m.status) || 'pending';
+    var txt = (m && m.value != null) ? fmt(m.value) : PENDING;
+    return '<div class="v rex-v-'+esc(st)+'" title="'+esc(statusLabel(st)+': '+((m && m.source) || ''))+'"><i></i>'+esc(label)+' <b>'+esc(txt)+'</b></div>';
+  }
+  function popRow(label, m, fmt){
+    var st = (m && m.status) || 'pending';
+    return '<tr><td>'+esc(label)+'</td><td class="n">'+esc(m && m.value != null ? fmt(m.value) : PENDING)+'</td><td>'+pill(st)+'</td></tr>';
+  }
+  function sourcesHtml(list){
+    var seen = {}, out = [];
+    list.forEach(function(m){ if (m && m.source && !seen[m.source]){ seen[m.source] = 1; out.push('<li>'+esc(m.source)+'</li>'); } });
+    return '<div class="srcs"><b>'+bi('Sources','出典')+'</b><ul style="margin:2px 0 0 14px;padding:0;">'+out.join('')+'</ul></div>';
+  }
+  function detailPopup(title, sub, o){
+    var ol = o.opportunity_lost_yen || {};
+    return '<div class="rex-pop"><b>'+esc(title)+'</b>'+(sub ? '<br><span style="color:#6b6b67;font-size:10.5px;">'+esc(sub)+'</span>' : '')+
+      '<table>'+
+      popRow(bi('Visitors','来訪者数'), o.visitors, fmtPeople)+
+      popRow(bi('Revenue (tourist spend)','観光消費額'), o.revenue_yen, fmtYen)+
+      popRow(bi('Opportunity lost: overnight gap*','機会損失：宿泊ギャップ*'), ol.overnight_gap, fmtYen)+
+      popRow(bi('Opportunity lost: weather','機会損失：天候'), ol.weather, fmtYen)+
+      popRow(bi('Opportunity lost: idle rooms','機会損失：空室'), ol.idle_rooms, fmtYen)+
+      '</table>'+
+      '<div style="font-size:10px;color:#6b6b67;margin-top:4px;">'+bi('*If the Kanazawa overnight share (39%) were reached.','*金沢並みの宿泊率（39%）に達した場合。')+'</div>'+
+      (o.annotation ? '<div style="font-size:10.5px;margin-top:4px;">'+esc(o.annotation)+'</div>' : '')+
+      sourcesHtml([o.visitors, o.revenue_yen, ol.overnight_gap, ol.weather, ol.idle_rooms])+'</div>';
+  }
+
+  function nodeLatLng(id){
+    if (!DATA) return null;
+    for (var i=0;i<DATA.nodes.length;i++){ if (DATA.nodes[i].id === id) return [DATA.nodes[i].lat, DATA.nodes[i].lon]; }
+    var ext = DATA.external_points && DATA.external_points[id];
+    return ext ? [ext.lat, ext.lon] : null;
+  }
+  function placeName(id){
+    var n = (DATA.nodes || []).filter(function(x){ return x.id === id; })[0] || (DATA.external_points || {})[id];
+    return n ? nm(n) : id;
+  }
+
+  // Label side per node, chosen to avoid the existing node-name tooltips (index.html NODES[].dir).
+  var LABEL_DIR = { tojinbo:'bottomleft', mikuni:'bottom', awara:'topright', maruoka:'bottom', station:'bottomleft',
+                    eiheiji:'topright', katsuyama:'bottom', rainbow:'left', ono:'right' };
+  var LABEL_SHIFT = {
+    right:'translate(14px,-50%)', left:'translate(calc(-100% - 14px),-50%)',
+    top:'translate(-50%,calc(-100% - 14px))', bottom:'translate(-50%,14px)',
+    topright:'translate(8px,calc(-100% - 8px))', bottomleft:'translate(calc(-100% - 8px),8px)'
+  };
+  function draw(){
+    layer.clearLayers();
+    if (!DATA) return;
+    // Municipality circles: area proportional to modelled revenue.
+    var maxRev = 0;
+    DATA.regions.forEach(function(r){ if (r.revenue_yen && r.revenue_yen.value) maxRev = Math.max(maxRev, r.revenue_yen.value); });
+    DATA.regions.forEach(function(r){
+      var rev = r.revenue_yen || {}, st = rev.status || 'pending';
+      var radius = (rev.value && maxRev) ? 14000 * Math.sqrt(rev.value / maxRev) : 2500;
+      var c = L.circle(r.centroid, { pane:'rexAreas', radius:radius, color:STATUS_COLOR[st], weight:1.8,
+        dashArray:(st === 'pending' || st === 'illustrative') ? '5,5' : null,
+        fillColor:STATUS_COLOR[st], fillOpacity: st === 'pending' ? 0.05 : 0.13 }).addTo(layer);
+      c.bindTooltip('<b>'+esc(nm(r))+'</b><br>'+bi('Visitors','来訪者数')+' '+esc(fmtPeople(r.visitors && r.visitors.value))+
+        ' · '+bi('Revenue','消費額')+' '+esc(fmtYen(rev.value)), { sticky:true });
+      c.bindPopup(detailPopup(nm(r), bi('Municipality · visitors = JTA, latest 12 months ('+((DATA.visitor_window||{}).regions||'')+')',
+        '市町 · 来訪者数＝観光庁デジタル観光統計、直近12か月（'+((DATA.visitor_window||{}).regions||'')+'）'), r), { maxWidth:340 });
+    });
+    // Flows: dashed "not yet measured" corridors.
+    DATA.flows.forEach(function(f){
+      var a = f.from_coord || nodeLatLng(f.from), b = f.to_coord || nodeLatLng(f.to);
+      if (!a || !b) return;
+      var st = (f.visitors && f.visitors.status) || f.status || 'pending';
+      var measured = f.visitors && f.visitors.value != null;
+      var line = L.polyline([a, b], { pane:'rexAreas', color:STATUS_COLOR[st], weight: measured ? 3 : 2.2, opacity:0.85,
+        dashArray: measured ? null : '6,6' }).addTo(layer);
+      line.bindTooltip(esc(placeName(f.from))+' → '+esc(placeName(f.to))+': '+
+        (measured ? esc(fmtPeople(f.visitors.value)) : bi('not yet measured '+PENDING, '未計測 '+PENDING)), { sticky:true });
+    });
+    // Node labels. Full three-line labels from zoom 10; one line (name + revenue) below
+    // that so the Sakai / Awara / Fukui cluster stays readable at the default view.
+    var compact = map.getZoom() < 10;
+    DATA.nodes.forEach(function(n){
+      var ol = n.opportunity_lost_yen || {};
+      var html;
+      if (n.priority === false){
+        if (compact) return; // pending-only, non-priority nodes appear once zoomed in
+        html = '<div class="rex-label muted"><span class="nm">'+esc(nm(n))+'</span> '+esc(PENDING)+'</div>';
+      } else if (compact){
+        html = '<div class="rex-label">'+valLine(nm(n), n.revenue_yen, fmtYen)+'</div>';
+      } else {
+        html = '<div class="rex-label"><div class="nm">'+esc(nm(n))+'</div>'+
+          valLine(bi('Visitors','来訪者'), n.visitors, fmtPeople)+
+          valLine(bi('Revenue','消費額'), n.revenue_yen, fmtYen)+
+          valLine(bi('Opp. lost','機会損失'), ol.overnight_gap, fmtYen)+'</div>';
+      }
+      html = '<div style="transform:'+(LABEL_SHIFT[LABEL_DIR[n.id] || 'right'])+';width:max-content;">'+html+'</div>';
+      var m = L.marker([n.lat, n.lon], { pane:'rexLabels', icon:L.divIcon({ className:'', html:html, iconSize:null, iconAnchor:[0, 0] }), keyboard:false }).addTo(layer);
+      m.bindPopup(detailPopup(nm(n), bi('Node · visitors = prefecture 入込数 2025 (gross visits)', 'ノード · 来訪者数＝福井県観光客入込数 2025（延べ人数）'), n), { maxWidth:340 });
+    });
+  }
+
+  // ---- Control: toggle + legend ----
+  var ctl = L.control({ position:'topright' });
+  var box;
+  ctl.onAdd = function(){
+    box = L.DomUtil.create('div', 'rex-control leaflet-bar');
+    L.DomEvent.disableClickPropagation(box);
+    L.DomEvent.disableScrollPropagation(box);
+    renderControl();
+    return box;
+  };
+  function renderControl(){
+    if (!box) return;
+    box.classList.toggle('on', ON);
+    var p = DATA && DATA.prefecture, a = DATA && DATA.assumptions;
+    var legend = '';
+    if (ON){
+      legend = '<div class="rex-pills">'+pill('real')+pill('modelled')+pill('illustrative')+pill('pending')+'</div>';
+      if (LOADING && !DATA) legend += '<div>'+bi('Loading…','読み込み中…')+'</div>';
+      else if (!DATA) legend += '<div>'+bi('Economics data not available '+PENDING, '経済データを読み込めません '+PENDING)+'</div>';
+      else {
+        legend += '<div class="rex-row"><span>'+bi('Fukui Pref. visitors ','福井県 入込客数（実人数）')+'</span><b>'+esc(fmtPeople(p.visitors.value))+'</b></div>'+
+          '<div class="rex-row"><span>'+bi('Tourist spend','観光消費額')+'</span><b>'+esc(fmtYen(p.revenue_yen.value))+'</b></div>'+
+          '<div class="rex-row"><span>'+bi('Overnight share','宿泊客の割合')+'</span><b>'+esc(a.overnight_share.value != null ? (a.overnight_share.value*100).toFixed(1)+'%' : PENDING)+'</b></div>'+
+          '<div class="rex-row"><span>'+bi('Overnight gap vs Kanazawa','金沢比の宿泊ギャップ')+'</span><b style="color:#1d5ca8">'+esc(fmtYen(p.opportunity_lost_yen.overnight_gap.value))+'</b></div>'+
+          '<div class="rex-key"><span class="circ"></span>'+bi('Circle area = calculated revenue per municipality','円の面積＝市町別の算出消費額')+'</div>'+
+          '<div class="rex-key"><span class="dash"></span>'+bi('Dashed = flow not yet measured','破線＝人流は未計測')+'</div>'+
+          '<details class="rex-note"><summary style="cursor:pointer;">'+bi('Notes and sources','注記と出典')+'</summary>'+
+          '<div class="rex-note">'+bi('Pending: weather and idle-room losses, Fukui Station visitors, all flows. Click a circle or label for sources.',
+            'データ待ち：天候・空室による損失、福井駅の来訪者数、全ての人流。円やラベルをクリックすると出典を表示。')+'</div>'+
+          '<div class="rex-note">'+bi('Node visitors are gross visits (入込数 延べ): do not sum. Municipality visitors are JTA (latest 12 months); they jump sharply from Mar 2026, under review.',
+            'ノードの来訪者数は延べ人数のため合計不可。市町は観光庁デジタル観光統計（直近12か月）。2026年3月以降に急増しており確認中。')+'</div>'+
+          '<div class="rex-src">'+bi('Data: ','データ：')+esc(DATA_ORIGIN === 'inline' ? bi('inline copy (offline fallback)','埋め込みデータ（オフライン用）') : DATA_ORIGIN)+' · '+esc((DATA.generated_at||'').slice(0,10))+'</div></details>';
+      }
+    }
+    box.innerHTML = '<button type="button" class="rex-toggle" aria-pressed="'+(ON?'true':'false')+'" title="'+esc(bi('Show regional economics','地域経済を表示'))+'">'+
+      '<span class="rex-switch"></span><span>'+bi('Economics','経済')+'</span></button><div class="rex-legend">'+legend+'</div>';
+    box.querySelector('.rex-toggle').addEventListener('click', function(){ setOn(!ON); });
+  }
+  ctl.addTo(map);
+
+  function load(){
+    if (DATA || LOADING) return;
+    LOADING = true; renderControl();
+    var inline = window.REGIONAL_ECONOMICS_DATA;
+    function useInline(){
+      LOADING = false;
+      if (inline){ DATA = inline; DATA_ORIGIN = 'inline'; }
+      renderControl(); if (ON) draw();
+    }
+    if (typeof fetch !== 'function' || location.protocol === 'file:') return useInline();
+    fetch('data/regional_economics.json', { cache:'no-cache' })
+      .then(function(res){ if (!res.ok) throw new Error(res.status); return res.json(); })
+      .then(function(json){ LOADING = false; DATA = json; DATA_ORIGIN = 'data/regional_economics.json'; renderControl(); if (ON) draw(); })
+      .catch(useInline);
+  }
+  function setOn(v){
+    ON = v;
+    if (ON){ layer.addTo(map); load(); draw(); } else { map.removeLayer(layer); }
+    renderControl();
+  }
+  var lastCompact = map.getZoom() < 10;
+  map.on('zoomend', function(){ var c = map.getZoom() < 10; if (c !== lastCompact){ lastCompact = c; if (ON) draw(); } });
+  // Re-render labels when the page language switch flips html[data-lang].
+  if (typeof MutationObserver !== 'undefined'){
+    new MutationObserver(function(){ renderControl(); if (ON) draw(); })
+      .observe(document.documentElement, { attributes:true, attributeFilter:['data-lang'] });
+  }
 })();
 </script>
 </body>
